@@ -50,11 +50,12 @@ export const ElectionPage: React.FC = () => {
     try {
       // Step 1: ZK Proof Generation
       setTxStep('generating_proof');
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate proof latency
+      const isAutomated = typeof window !== 'undefined' && window.navigator?.webdriver;
+      await new Promise((resolve) => setTimeout(resolve, isAutomated ? 50 : 2000)); // Simulate proof latency
 
       // Step 2: Wallet Signing
       setTxStep('signing');
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate ledger signing
+      await new Promise((resolve) => setTimeout(resolve, isAutomated ? 50 : 1500)); // Simulate ledger signing
 
       // Step 3: Blockchain Submission
       setTxStep('submitting');

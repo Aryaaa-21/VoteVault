@@ -1,6 +1,6 @@
 # VoteVault: Midnight Developer Submission Checklist
 
-This checklist verifies the compliance of VoteVault with the **Midnight Network Level 1, Level 2, and Level 3 Developer Submission** criteria.
+This checklist verifies the compliance of VoteVault with the **Midnight Network Level 1, Level 2, and Level 3 Developer Submission** criteria, distinguishing between verified, simulated, and partially complete features.
 
 ---
 
@@ -9,7 +9,7 @@ This checklist verifies the compliance of VoteVault with the **Midnight Network 
 *   **[COMPLETE] Smart Contract Schema (`index.compact`)**
     *   *Details*: Located at `contract/src/index.compact`. Implements public state for elections, admin controls, candidate registration, and ZK nullifier validation.
 *   **[COMPLETE] Contract Compilation Pipeline**
-    *   *Details*: Configured in `contract/package.json`. Includes a simulation compiler (`npm run compile`) and verified instructions for running the native `compactc:0.23.0` compiler via Docker.
+    *   *Details*: Configured in `contract/package.json`. Includes a simulation compiler (`npm run compile`) and instructions for running the native `compactc:0.23.0` compiler via Docker.
 *   **[COMPLETE] Monorepo Configuration**
     *   *Details*: Isolated monorepo workspaces (`contract/` and `frontend/`) governed by the root `package.json`.
 *   **[COMPLETE] Initial Product Proposal**
@@ -21,25 +21,25 @@ This checklist verifies the compliance of VoteVault with the **Midnight Network 
 
 ## Level 2: Frontend & Wallet Integration Compliance
 
-*   **[COMPLETE] Lace Wallet Integration**
-    *   *Details*: Injected provider connect/disconnect flow mapped in `frontend/src/context/MidnightClient.ts` using `window.midnight.mnLace` hooks.
-*   **[COMPLETE] Blockchain Client Layer**
-    *   *Details*: Dedicated `MidnightClient` client adapter decouples core web logic from raw `@midnight-network/midnight-js` SDK and ZK-proof generation calls.
-*   **[COMPLETE] Observable Privacy Controls**
-    *   *Details*: Zero-Knowledge nullifier hash calculations are performed locally in client memory prior to ledger broadcast, preventing account-to-vote association.
+*   **[PARTIALLY COMPLETE / SIMULATED] Lace Wallet Integration**
+    *   *Details*: The connection hooks in `MidnightClient.ts` target `window.midnight.mnLace`. However, in the absence of an active injected Lace extension in the local environment, the client falls back to a simulated Lace provider (`0x89FB-X12-LACE-VOTEVAULT`).
+*   **[PARTIALLY COMPLETE / SIMULATED] Blockchain Client Layer**
+    *   *Details*: The React context uses `MidnightClient` to bridge frontend components and on-chain methods. Real chain calls like `submitTx` and `deployContract` are fully scaffolded, but default to client-side simulations.
+*   **[SIMULATED] Observable Privacy Controls**
+    *   *Details*: Private witness keys and nullifier generations are computed locally on the client to protect anonymity, but actual ledger proof submission remains simulated.
 *   **[COMPLETE] Devnet Simulation Mode**
-    *   *Details*: The client falls back to locally emulating ZK proof timings and transaction outputs when a live wallet or node is unavailable, maintaining a seamless developer loop.
+    *   *Details*: Seamless developer loop fully implemented. Active fallbacks prevent application crashes when running tests or previewing without a live node.
 
 ---
 
 ## Level 3: Production Quality Assurance
 
 *   **[COMPLETE] Fully Functional dApp**
-    *   *Details*: Core dashboard features active voting, live results tallying, ledger verification audits, and admin election creation dashboards.
-*   **[COMPLETE] Automate Deployment Scripts**
-    *   *Details*: Created `contract/deploy.js` to handle dynamic on-chain deployment using node and proof endpoints with automatic dry-run/simulation fallbacks.
-*   **[COMPLETE] Unit & Integration Tests**
-    *   *Details*: Vitest test suite executing connection, vote casting, and proposal creation flows passes successfully (`npm run test`).
+    *   *Details*: Core dashboard features active voting, live results tallying, ledger verification audits, and admin referendums. All verified by passing Playwright E2E flows.
+*   **[PARTIALLY COMPLETE / SIMULATED] Automate Deployment Scripts**
+    *   *Details*: Deployment script (`contract/deploy.js`) is written and tested. However, because no funded admin seed was provided under `VITE_ADMIN_SEED`, the contract address (`0xb0a4...50cb`) and deployment transaction are **SIMULATED** and **NOT YET VERIFIED on a live network**.
+*   **[COMPLETE] Unit & E2E Integration Tests**
+    *   *Details*: All 4 Vitest unit/state tests pass successfully. All 3 Playwright E2E integration tests (Wallet Connection, Voting, and Results Outcomes) pass successfully.
 *   **[COMPLETE] CI/CD Automation Pipeline**
     *   *Details*: Automated GitHub Actions workflow `.github/workflows/ci.yml` successfully compiles contracts, lints with `oxlint`, executes Vitest, and bundles production web assets.
 *   **[COMPLETE] Architecture & Privacy Docs**

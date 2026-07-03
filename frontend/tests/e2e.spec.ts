@@ -15,7 +15,7 @@ test.describe('VoteVault End-to-End Flows', () => {
     await expect(page).toHaveURL(/.*connect/);
     
     // Click Lace Wallet connection
-    const laceButton = page.locator('h3:has-text("Lace Wallet")');
+    const laceButton = page.locator('button:has-text("Connect Lace Wallet")');
     await expect(laceButton).toBeVisible();
     await laceButton.click();
     
@@ -23,14 +23,18 @@ test.describe('VoteVault End-to-End Flows', () => {
     await expect(page).toHaveURL(/.*dashboard/);
     
     // Verify wallet status address is visible in top navigation
-    const walletAddressText = page.locator('nav').locator('button:has-text("#89FB")');
+    const walletAddressText = page.locator('nav').locator('text=0x89FB');
     await expect(walletAddressText).toBeVisible();
   });
 
   test('Voting Flow', async ({ page }) => {
-    // Navigate and connect wallet
-    await page.goto('/connect');
-    await page.locator('h3:has-text("Lace Wallet")').click();
+    // Navigate to homepage and connect
+    await page.goto('/');
+    await page.locator('button:has-text("Connect Wallet")').first().click();
+    
+    const laceButton = page.locator('button:has-text("Connect Lace Wallet")');
+    await expect(laceButton).toBeVisible();
+    await laceButton.click();
     await expect(page).toHaveURL(/.*dashboard/);
 
     // Find the first active election and click Cast Your Vote
@@ -38,10 +42,10 @@ test.describe('VoteVault End-to-End Flows', () => {
     await expect(castVoteButton).toBeVisible();
     await castVoteButton.click();
 
-    // Select Option A
-    const optionA = page.locator('span:has-text("Option A: Green Infrastructure")');
-    await expect(optionA).toBeVisible();
-    await optionA.click();
+    // Select the first option (Option A)
+    const selectButton = page.locator('button:has-text("Select Choice")').first();
+    await expect(selectButton).toBeVisible();
+    await selectButton.click();
 
     // Submit vote
     const submitButton = page.locator('button:has-text("Confirm & Sign")');
@@ -58,11 +62,17 @@ test.describe('VoteVault End-to-End Flows', () => {
   });
 
   test('Results Flow', async ({ page }) => {
-    // Navigate to dashboard
-    await page.goto('/dashboard');
+    // Navigate to homepage and connect
+    await page.goto('/');
+    await page.locator('button:has-text("Connect Wallet")').first().click();
+    
+    const laceButton = page.locator('button:has-text("Connect Lace Wallet")');
+    await expect(laceButton).toBeVisible();
+    await laceButton.click();
+    await expect(page).toHaveURL(/.*dashboard/);
 
-    // Find the view results link under historical referendums
-    const viewResultsLink = page.locator('a:has-text("View Outcomes")').first();
+    // Find the view results link under historical referendums (receipt icon button)
+    const viewResultsLink = page.locator('button[aria-label="View Audit Receipt"]').first();
     await expect(viewResultsLink).toBeVisible();
     await viewResultsLink.click();
 
