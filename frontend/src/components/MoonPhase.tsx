@@ -1,55 +1,65 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface MoonPhaseProps {
   size?: number;
   speed?: number; // duration of a full cycle in seconds
   interactive?: boolean;
+  isPaused?: boolean;
 }
 
 export const MoonPhase: React.FC<MoonPhaseProps> = ({
-  size = 112, // w-28 h-28 equivalent
-  speed = 15, // 15 seconds per cycle
-  interactive = true
+  size = 120,
+  speed = 15,
+  interactive = true,
+  isPaused = false
 }) => {
   const [percent, setPercent] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
+  const shouldPause = isPaused || isHovered;
+
   useEffect(() => {
     let animationFrameId: number;
-    let startTime = performance.now();
-    const cycleDuration = speed * 1000; // ms
+    let lastTime = performance.now();
 
     const animate = (time: number) => {
-      const elapsed = time - startTime;
-      // If hovered, speed up the transition for playful interactivity
-      const currentSpeedFactor = isHovered ? 2.5 : 1;
-      const progress = (elapsed * currentSpeedFactor) % cycleDuration;
-      const currentPercent = (progress / cycleDuration) * 100;
-      setPercent(currentPercent);
+      const deltaTime = time - lastTime;
+      lastTime = time;
+
+      if (!shouldPause) {
+        // Increment percentage smoothly based on time delta
+        const increment = (deltaTime / (speed * 1000)) * 100;
+        setPercent((prev) => (prev + increment) % 100);
+      }
+
       animationFrameId = requestAnimationFrame(animate);
     };
 
     animationFrameId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [speed, isHovered]);
+  }, [speed, shouldPause]);
 
-  // Compute SVG path for the lit portion
-  const getMoonPath = (pct: number): string => {
+  // Compute SVG path for the shadowed portion of the moon
+  const getShadowPath = (pct: number): string => {
     const r = 48;
     const cx = 50;
     const cy = 50;
 
-    if (pct <= 0.5 || pct >= 99.5) return "";
-    if (Math.abs(pct - 50) < 0.5) {
+    if (pct <= 0.5 || pct >= 99.5) {
+      // New Moon: shadow covers the whole moon
       return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`;
+    }
+    if (Math.abs(pct - 50) < 0.5) {
+      // Full Moon: no shadow
+      return "";
     }
 
     const isWaxing = pct < 50;
     const phaseRatio = isWaxing ? (pct / 50) : ((100 - pct) / 50);
     const rx = Math.abs(r * (1 - 2 * phaseRatio));
 
-    const sweepOuter = isWaxing ? 1 : 0;
+    // The shadow is on the opposite side of the lit portion
+    const sweepOuter = isWaxing ? 0 : 1;
     const sweepInner = (pct < 25 || (pct > 50 && pct < 75)) ? 0 : 1;
 
     const startX = cx;
@@ -62,36 +72,24 @@ export const MoonPhase: React.FC<MoonPhaseProps> = ({
             A ${rx} ${r} 0 0 ${sweepInner} ${startX} ${startY} Z`;
   };
 
-  const getPhaseName = (pct: number): string => {
-    if (pct < 3 || pct >= 97) return "NEW MOON";
-    if (pct >= 3 && pct < 22) return "WAXING CRESCENT";
-    if (pct >= 22 && pct < 28) return "FIRST QUARTER";
-    if (pct >= 28 && pct < 47) return "WAXING GIBBOUS";
-    if (pct >= 47 && pct < 53) return "FULL MOON";
-    if (pct >= 53 && pct < 72) return "WANING GIBBOUS";
-    if (pct >= 72 && pct < 78) return "THIRD QUARTER";
-    return "WANING CRESCENT";
-  };
+  const shadowPath = getShadowPath(percent);
 
-  const phaseName = getPhaseName(percent);
-  const litPath = getMoonPath(percent);
-
-  // Calculate glow opacity based on the moon phase (brightest at full moon)
-  const glowOpacity = Math.max(0.1, Math.sin((percent / 100) * Math.PI) * 0.6);
+  // Calculate outer glow opacity (brightest at full moon)
+  const glowOpacity = Math.max(0.15, Math.sin((percent / 100) * Math.PI) * 0.7);
 
   return (
     <div 
-      className="flex flex-col items-center justify-center relative cursor-pointer"
+      className="flex flex-col items-center justify-center relative select-none"
       onMouseEnter={() => interactive && setIsHovered(true)}
       onMouseLeave={() => interactive && setIsHovered(false)}
     >
-      {/* Outer Glow container */}
+      {/* Dynamic Lunar Aura Glow */}
       <div 
-        className="absolute rounded-full transition-shadow duration-500 blur-xl pointer-events-none"
+        className="absolute rounded-full transition-all duration-700 blur-2xl pointer-events-none"
         style={{
-          width: `${size}px`,
-          height: `${size}px`,
-          boxShadow: `0 0 ${30 + glowOpacity * 30}px rgba(254, 254, 250, ${glowOpacity * 0.4})`,
+          width: `${size * 0.9}px`,
+          height: `${size * 0.9}px`,
+          boxShadow: `0 0 ${25 + glowOpacity * 35}px rgba(255, 253, 245, ${glowOpacity * 0.45})`,
           opacity: glowOpacity
         }}
       />
@@ -101,100 +99,94 @@ export const MoonPhase: React.FC<MoonPhaseProps> = ({
         width={size} 
         height={size} 
         viewBox="0 0 100 100" 
-        className="relative z-10 select-none overflow-visible drop-shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+        className="relative z-10 overflow-visible drop-shadow-[0_8px_30px_rgba(0,0,0,0.3)] transition-transform duration-500 hover:scale-105"
       >
         <defs>
-          {/* Subtle glow filter */}
-          <filter id="moon-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          {/* Soft blur for the shadow edge (terminator) to make it look realistic */}
+          <filter id="terminator-blur" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="1.2" />
           </filter>
 
-          {/* Lit Moon Texture/Gradient */}
-          <radialGradient id="lit-moon" cx="35%" cy="35%" r="65%">
+          {/* Warm cream/silver 3D lunar surface texture */}
+          <radialGradient id="moon-surface" cx="30%" cy="30%" r="70%">
             <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="60%" stopColor="#fbf9f3" />
-            <stop offset="90%" stopColor="#efebe0" />
-            <stop offset="100%" stopColor="#dcd5c1" />
+            <stop offset="45%" stopColor="#fdfaf2" />
+            <stop offset="80%" stopColor="#f3ebd9" />
+            <stop offset="95%" stopColor="#e5dbbe" />
+            <stop offset="100%" stopColor="#cfc3a1" />
           </radialGradient>
 
-          {/* Dark Shadow Texture/Gradient */}
-          <radialGradient id="shadow-moon" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#1e2025" />
-            <stop offset="85%" stopColor="#121316" />
-            <stop offset="100%" stopColor="#0a0a0c" />
-          </radialGradient>
+          {/* Deep celestial shadow gradient */}
+          <linearGradient id="moon-shadow" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#090a0d" stopOpacity="0.94" />
+            <stop offset="100%" stopColor="#121419" stopOpacity="0.88" />
+          </linearGradient>
         </defs>
 
-        {/* Base Layer: Dark side of the moon */}
-        <circle cx="50" cy="50" r="48" fill="url(#shadow-moon)" />
+        {/* Base Layer: Fully lit moon sphere */}
+        <circle cx="50" cy="50" r="48" fill="url(#moon-surface)" />
 
-        {/* Shadow Craters (always visible on the dark side, very subtle) */}
-        <g opacity="0.12" fill="#000000">
-          <circle cx="35" cy="30" r="4" />
-          <circle cx="65" cy="40" r="6" />
-          <circle cx="45" cy="65" r="5" />
-          <circle cx="55" cy="25" r="3" />
-          <circle cx="28" cy="52" r="3.5" />
-          <circle cx="70" cy="68" r="4" />
+        {/* Maria: Soft organic lunar plains */}
+        <g opacity="0.12" fill="#cca783">
+          <path d="M 32 28 A 12 10 0 1 0 44 40 A 10 12 0 1 0 32 28 Z" />
+          <path d="M 58 35 A 16 12 0 1 0 74 51 A 12 16 0 1 0 58 35 Z" />
+          <path d="M 33 60 A 9 9 0 1 0 42 69 A 9 9 0 1 0 33 60 Z" />
+          <path d="M 64 64 A 8 7 0 1 0 72 72 A 7 8 0 1 0 64 64 Z" />
+          <path d="M 46 22 A 6 5 0 1 0 52 27 A 5 6 0 1 0 46 22 Z" />
         </g>
 
-        {/* Lit Layer: Visible portion of the moon */}
-        {litPath && (
+        {/* 3D Craters with light and shadow offsets */}
+        <g opacity="0.18">
+          {/* Crater 1 */}
+          <circle cx="35" cy="32" r="4.5" fill="#a89975" />
+          <circle cx="34.2" cy="31.2" r="4.5" fill="#4d4432" opacity="0.4" />
+          <circle cx="35.8" cy="32.8" r="4.5" fill="#ffffff" opacity="0.6" />
+          
+          {/* Crater 2 */}
+          <circle cx="66" cy="42" r="6" fill="#a89975" />
+          <circle cx="65.2" cy="41.2" r="6" fill="#4d4432" opacity="0.4" />
+          <circle cx="66.8" cy="42.8" r="6" fill="#ffffff" opacity="0.6" />
+          
+          {/* Crater 3 */}
+          <circle cx="46" cy="67" r="5" fill="#a89975" />
+          <circle cx="45.2" cy="66.2" r="5" fill="#4d4432" opacity="0.4" />
+          <circle cx="46.8" cy="67.8" r="5" fill="#ffffff" opacity="0.6" />
+
+          {/* Crater 4 */}
+          <circle cx="54" cy="23" r="3.5" fill="#a89975" />
+          <circle cx="53.4" cy="22.4" r="3.5" fill="#4d4432" opacity="0.4" />
+          <circle cx="54.6" cy="23.6" r="3.5" fill="#ffffff" opacity="0.6" />
+
+          {/* Crater 5 */}
+          <circle cx="26" cy="50" r="3" fill="#a89975" />
+          <circle cx="25.5" cy="49.5" r="3" fill="#4d4432" opacity="0.4" />
+          <circle cx="26.5" cy="50.5" r="3" fill="#ffffff" opacity="0.6" />
+
+          {/* Crater 6 */}
+          <circle cx="72" cy="66" r="4" fill="#a89975" />
+          <circle cx="71.3" cy="65.3" r="4" fill="#4d4432" opacity="0.4" />
+          <circle cx="72.7" cy="66.7" r="4" fill="#ffffff" opacity="0.6" />
+        </g>
+
+        {/* Overlay Shadow Layer with feathered edge (creates terminator blur) */}
+        {shadowPath && (
           <path 
-            d={litPath} 
-            fill="url(#lit-moon)" 
-            filter="url(#moon-glow)"
+            d={shadowPath} 
+            fill="url(#moon-shadow)" 
+            filter="url(#terminator-blur)"
           />
         )}
 
-        {/* Lit Craters (only visible on the lit side by using a clipPath) */}
-        {litPath && (
-          <g>
-            <clipPath id="lit-clip">
-              <path d={litPath} />
-            </clipPath>
-            <g clipPath="url(#lit-clip)" opacity="0.08" fill="#5c543f">
-              <circle cx="35" cy="30" r="4" />
-              <circle cx="65" cy="40" r="6" />
-              <circle cx="45" cy="65" r="5" />
-              <circle cx="55" cy="25" r="3" />
-              <circle cx="28" cy="52" r="3.5" />
-              <circle cx="70" cy="68" r="4" />
-              {/* Extra micro-craters */}
-              <circle cx="40" cy="48" r="1.5" />
-              <circle cx="60" cy="58" r="2.5" />
-              <circle cx="50" cy="38" r="2" />
-            </g>
-          </g>
-        )}
-
-        {/* Moon Rim Glow Ring */}
+        {/* Fine Moon Rim highlight ring */}
         <circle 
           cx="50" 
           cy="50" 
           r="48" 
           fill="none" 
-          stroke="rgba(255, 255, 255, 0.15)" 
+          stroke="rgba(255, 255, 255, 0.2)" 
           strokeWidth="0.5" 
         />
       </svg>
-
-      {/* Phase Label Display */}
-      <div className="mt-md h-6 flex items-center justify-center overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.span 
-            key={phaseName}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="font-mono-technical text-[9px] uppercase tracking-[0.2em] text-on-surface-variant text-center"
-          >
-            {phaseName}
-          </motion.span>
-        </AnimatePresence>
-      </div>
     </div>
   );
 };

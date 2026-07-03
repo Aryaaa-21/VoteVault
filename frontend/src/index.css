@@ -72,6 +72,7 @@
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(0, 0, 0, 0.08);
   --glow-color: rgba(0, 0, 0, 0.03);
+  --planet-glow-rgb: 17, 17, 17;
 }
 
 html.dark {
@@ -92,6 +93,7 @@ html.dark {
   --glass-bg: rgba(10, 10, 10, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glow-color: rgba(255, 255, 255, 0.04);
+  --planet-glow-rgb: 255, 255, 255;
 }
 
 /* Global Reset & Base Typography */
@@ -191,4 +193,37 @@ textarea:focus-visible {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@keyframes spin-clockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-counterclockwise {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.animate-orbit-cw {
+  animation: spin-clockwise var(--duration, 40s) linear infinite;
+}
+
+.animate-orbit-ccw {
+  animation: spin-counterclockwise var(--duration, 30s) linear infinite;
+}
+
+@keyframes planet-breathe {
+  0%, 100% {
+    opacity: 0.85;
+    box-shadow: 0 0 6px rgba(var(--planet-glow-rgb), 0.3);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 18px rgba(var(--planet-glow-rgb), 0.85);
+  }
+}
+
+.animate-planet-pulse {
+  animation: planet-breathe 3s ease-in-out infinite;
 }

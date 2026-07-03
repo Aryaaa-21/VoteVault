@@ -9,6 +9,7 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { walletConnected } = useVoteVault();
   const [scrolled, setScrolled] = useState(false);
+  const [isVisualHovered, setIsVisualHovered] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -156,67 +157,91 @@ export const LandingPage: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-            className="lg:col-span-6 flex justify-center items-center relative aspect-square w-full max-w-[480px] mx-auto"
+            onMouseEnter={() => setIsVisualHovered(true)}
+            onMouseLeave={() => setIsVisualHovered(false)}
+            className="lg:col-span-6 flex justify-center items-center relative aspect-square w-full max-w-[480px] mx-auto cursor-pointer"
           >
-            {/* Animated Circles & Nodes */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              {/* Outer Orbit */}
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
-                className="absolute w-[90%] h-[90%] rounded-full border border-dashed border-outline-variant/40 flex items-center justify-center"
+            {/* Animated Orbits & Central Moon (Unlike Directions) in 3D Perspective */}
+            <div 
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+              style={{
+                perspective: '1000px',
+                transformStyle: 'preserve-3d'
+              }}
+            >
+              {/* Outer Orbit (Clockwise) */}
+              <div 
+                className="absolute w-[92%] h-[92%] rounded-full border border-solid border-on-background/18 flex items-center justify-center animate-orbit-cw"
+                style={{ 
+                  transform: 'rotateX(66deg) rotateY(-18deg)',
+                  transformStyle: 'preserve-3d',
+                  animationPlayState: isVisualHovered ? 'paused' : 'running',
+                  '--duration': '45s'
+                } as React.CSSProperties}
               >
-                <div className="absolute top-0 w-3 h-3 rounded-full bg-primary/40"></div>
-                <div className="absolute bottom-0 w-2 h-2 rounded-full bg-on-surface-variant/40"></div>
-              </motion.div>
+                {/* Large planet */}
+                <div 
+                  className="absolute top-0 transform -translate-y-1/2 w-4 h-4 rounded-full bg-on-background animate-planet-pulse"
+                  style={{ animationDelay: '0s' }}
+                ></div>
+                {/* Small planet */}
+                <div 
+                  className="absolute bottom-0 transform translate-y-1/2 w-2 h-2 rounded-full bg-on-background/80 animate-planet-pulse"
+                  style={{ animationDelay: '0.6s' }}
+                ></div>
+              </div>
 
-              {/* Middle Orbit */}
-              <motion.div 
-                animate={{ rotate: -360 }}
-                transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
-                className="absolute w-[65%] h-[65%] rounded-full border border-outline-variant flex items-center justify-center"
+              {/* Middle Orbit (Counter-Clockwise) */}
+              <div 
+                className="absolute w-[66%] h-[66%] rounded-full border border-solid border-on-background/28 flex items-center justify-center animate-orbit-ccw"
+                style={{ 
+                  transform: 'rotateX(66deg) rotateY(-18deg)',
+                  transformStyle: 'preserve-3d',
+                  animationPlayState: isVisualHovered ? 'paused' : 'running',
+                  '--duration': '30s'
+                } as React.CSSProperties}
               >
-                <div className="absolute right-0 w-2.5 h-2.5 rounded-full bg-primary"></div>
-                <div className="absolute left-0 w-1.5 h-1.5 rounded-full bg-outline"></div>
-              </motion.div>
+                {/* Medium planet */}
+                <div 
+                  className="absolute right-0 transform translate-x-1/2 w-3.5 h-3.5 rounded-full bg-on-background animate-planet-pulse"
+                  style={{ animationDelay: '1.2s' }}
+                ></div>
+                {/* Micro planet */}
+                <div 
+                  className="absolute left-0 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-on-background/60 animate-planet-pulse"
+                  style={{ animationDelay: '1.8s' }}
+                ></div>
+              </div>
 
-              {/* Inner Orbit */}
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
-                className="absolute w-[40%] h-[40%] rounded-full border border-dashed border-outline-variant flex items-center justify-center"
+              {/* Inner Orbit (Clockwise) */}
+              <div 
+                className="absolute w-[40%] h-[40%] rounded-full border border-solid border-on-background/38 flex items-center justify-center animate-orbit-cw"
+                style={{ 
+                  transform: 'rotateX(66deg) rotateY(-18deg)',
+                  transformStyle: 'preserve-3d',
+                  animationPlayState: isVisualHovered ? 'paused' : 'running',
+                  '--duration': '18s'
+                } as React.CSSProperties}
               >
-                <div className="absolute top-0 w-2 h-2 rounded-full bg-primary"></div>
-              </motion.div>
+                {/* Medium-small planet */}
+                <div 
+                  className="absolute top-0 transform -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-on-background animate-planet-pulse"
+                  style={{ animationDelay: '2.4s' }}
+                ></div>
+              </div>
+
+              {/* Central Moon Phase Animation (No background container) */}
+              {/* Placed at translateZ(0px) in the same preserve-3d container for Z-depth sorting */}
+              <div 
+                className="relative pointer-events-auto"
+                style={{ 
+                  transform: 'translateZ(0px)',
+                  transformStyle: 'preserve-3d'
+                }}
+              >
+                <MoonPhase size={140} isPaused={isVisualHovered} />
+              </div>
             </div>
-
-            {/* Central Moon Phase Animation */}
-            <div className="relative z-10 p-sm glass-panel rounded-full border border-outline shadow-2xl flex items-center justify-center bg-surface/40 backdrop-blur-md">
-              <MoonPhase size={100} />
-            </div>
-
-            {/* Floating Network Particles */}
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                animate={{
-                  y: [0, -15, 0],
-                  x: [0, i % 2 === 0 ? 10 : -10, 0],
-                  opacity: [0.3, 0.7, 0.3]
-                }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 4 + i,
-                  ease: "easeInOut",
-                  delay: i * 0.5
-                }}
-                className={`absolute w-2 h-2 rounded-full bg-primary/30 z-0`}
-                style={{
-                  top: `${20 + i * 12}%`,
-                  left: `${15 + (i * 18) % 70}%`
-                }}
-              />
-            ))}
           </motion.div>
         </div>
       </section>
