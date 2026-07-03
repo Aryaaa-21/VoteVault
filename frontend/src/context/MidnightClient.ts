@@ -88,7 +88,7 @@ export class MidnightClient {
                 console.log("[MidnightClient] Running in Dev/Simulator Mode. Computing ZK proof locally...");
                 
                 const isAutomated = typeof window !== 'undefined' && window.navigator?.webdriver;
-                const isTest = (typeof process !== 'undefined' && (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true')) || isAutomated;
+                const isTest = import.meta.env.MODE === 'test' || isAutomated;
                 if (!isTest) {
                     await new Promise(resolve => setTimeout(resolve, 1500));
                 }
@@ -146,7 +146,7 @@ export class MidnightClient {
                 console.log("[MidnightClient] Simulated deployment in progress...");
                 
                 const isAutomated = typeof window !== 'undefined' && window.navigator?.webdriver;
-                const isTest = (typeof process !== 'undefined' && (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true')) || isAutomated;
+                const isTest = import.meta.env.MODE === 'test' || isAutomated;
                 if (!isTest) {
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
