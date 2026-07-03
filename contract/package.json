@@ -5,7 +5,8 @@
   "type": "module",
   "types": "dist/index.d.ts",
   "scripts": {
-    "compile": "node compile.js"
+    "compile": "node compile.js",
+    "deploy": "node deploy.js"
   },
   "dependencies": {
     "typescript": "^5.0.0",

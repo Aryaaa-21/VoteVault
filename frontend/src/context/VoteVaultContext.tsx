@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { VoteVaultContract } from 'votevault-contract';
+import { MidnightClient } from './MidnightClient';
 
 export interface Candidate {
   index: number;
@@ -46,6 +47,7 @@ const contractInstances: Record<string, any> = {};
 export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [walletConnected, setWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [walletApi, setWalletApi] = useState<any>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -151,14 +153,11 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setIsConnecting(true);
     setError(null);
     try {
-      // Check if Lace Wallet is available in window object
-      const midnightWallet = (window as any).midnight?.mnLace;
-
-      if (type === 'lace' && midnightWallet) {
-        // Real Lace connection flow
-        const enabledApi = await midnightWallet.enable();
-        const state = await enabledApi.state();
-        setWalletAddress(state.address || '0x89fb...x12');
+      const client = new MidnightClient();
+      if (type === 'lace' && (window as any).midnight?.mnLace) {
+        const walletState = await client.connectLaceWallet();
+        setWalletAddress(walletState.address);
+        setWalletApi(walletState.api);
         setWalletConnected(true);
       } else {
         // Fallback or simulated connection for local testing / other wallets
@@ -174,6 +173,7 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
         
         setWalletAddress(address);
+        setWalletApi(null);
         setWalletConnected(true);
       }
     } catch (err: any) {
@@ -187,6 +187,7 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const disconnectWallet = () => {
     setWalletConnected(false);
     setWalletAddress(null);
+    setWalletApi(null);
   };
 
   const castVote = async (electionId: string, candidateIndex: number) => {
@@ -196,23 +197,21 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
 
     try {
-      // 1. Get or create contract instance
+      const client = new MidnightClient();
+      
+      // 1. Submit on-chain or compute ZK nullifier locally
+      const { nullifier } = await client.castVoteOnChain(electionId, candidateIndex, walletAddress, walletApi);
+
+      // 2. Synchronize local Compact contract state
       let contract = contractInstances[electionId];
       if (!contract) {
         contract = new VoteVaultContract();
         contract.initialize('admin-pubkey-0x123', electionId, 'Election', 'Description');
         contractInstances[electionId] = contract;
       }
-
-      // 2. Generate a secure private nullifier (simulating ZK-SNARK witness locally)
-      const userSecret = walletAddress;
-      const seed = Math.random().toString();
-      const nullifier = `0xnullifier-${btoa(userSecret + seed).substring(0, 16)}`;
-
-      // 3. Call Compact contract circuit
       contract.cast_vote(nullifier, BigInt(candidateIndex));
 
-      // 4. Update local React state to reflect vote casting
+      // 3. Update local React state to reflect vote casting
       setElections((prevElections) =>
         prevElections.map((elec) => {
           if (elec.id === electionId) {
@@ -243,11 +242,12 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const createElection = async (title: string, description: string, candidateNames: string[]) => {
     setError(null);
     try {
-      const newId = `VV-${Math.floor(100 + Math.random() * 900)}-${title.substring(0, 2).toUpperCase()}`;
-      
-      // Instantiate contract for the new election
+      const client = new MidnightClient();
+      const deploymentResult = await client.deployElectionOnChain(title, description, candidateNames, walletAddress || 'admin-pubkey-0x123', walletApi);
+
+      // Instantiate contract locally for simulation tracking
       const contract = new VoteVaultContract();
-      contract.initialize(walletAddress || 'admin-pubkey-0x123', newId, title, description);
+      contract.initialize(walletAddress || 'admin-pubkey-0x123', deploymentResult.electionId, title, description);
       
       const newCandidates: Candidate[] = candidateNames.map((name, index) => {
         contract.register_candidate('admin-sig', BigInt(index), name);
@@ -259,10 +259,10 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       
       contract.open_election('admin-sig');
-      contractInstances[newId] = contract;
+      contractInstances[deploymentResult.electionId] = contract;
 
       const newElection: Election = {
-        id: newId,
+        id: deploymentResult.electionId,
         title,
         description,
         isActive: true,

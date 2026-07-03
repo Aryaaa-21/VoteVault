@@ -1,4 +1,4 @@
-# VoteVault
+# VoteVault: Decentralized Private Voting on Midnight
 
 > **Vote Privately. Verify Publicly.**
 
@@ -6,40 +6,46 @@ VoteVault is a decentralized, zero-knowledge voting dApp built on the **Midnight
 
 ---
 
-## 1. Project Overview
+## 1. Initial Product Idea & Objectives
 
-### Problem Statement
-Traditional voting systems force a trade-off between **privacy** and **integrity**. Public blockchains verify transactions transparently but expose individual choices, creating risks of voter intimidation, bribery, and coercion. Conversely, closed/centralized systems protect privacy but require trusting a central administrator to count votes honestly.
+Traditional voting systems require choosing between **privacy** and **integrity**. Public blockchains verify transactions transparently but expose individual choices, creating risks of voter coercion. Conversely, closed systems protect privacy but require trusting a central administrator to count votes honestly.
 
-### Why Privacy Matters
-In decentralized governance (DAOs), exposing wallet-to-vote mappings leads to:
-- **Coercion**: Powerful entities targeting smaller delegates based on their choices.
-- **Groupthink**: Voters waiting to see where the majority goes before signing.
-- **Targeted Exploits**: Aligning wallet contents with governance opinions to exploit validators.
-
-### Solution
-VoteVault resolves this dilemma by separating **voter identity** from the **ballot choice**. Using Midnight's zero-knowledge capabilities, voters generate a proof of eligibility and a unique transaction nullifier on their own devices. The ledger records that a valid vote was cast without exposing *who* cast it or *which option* they selected, producing a publicly auditable ledger of anonymous results.
+VoteVault resolves this dilemma by separating **voter identity** from the **ballot choice**. Using Midnight's zero-knowledge capabilities, voters generate a proof of eligibility and a unique transaction nullifier on their own devices. The ledger records that a valid vote was cast without exposing *who* cast it or *which option* they selected.
 
 ---
 
-## 2. Features
+## 2. Public State vs. Private Witness (Midnight Model)
 
-- **Day/Night Theme Toggle**: Premium, system-aware design with custom grayscale/monochromatic theme switches.
-- **Secure Wallet Connection**: Seamless integration with the **Lace Wallet** browser extension.
-- **ZK Nullifiers**: Prevention of double-voting without tracking individual voter accounts.
-- **Admin Deployment Console**: Simple panel for administrators to deploy new referendums, register candidate lists, and transition epochs.
-- **Participation Timelines**: Minimalist grayscale graphs displaying voting progress over epochs.
-- **Ledger Verification Table**: Live feed of cryptographic proof verification logs, state roots, and block signatures.
+One of Midnight's core design tenets is the separation of public ledger state and private client-side witness data:
+
+| State Category | Data Component | Storage Location | Visibility |
+| :--- | :--- | :--- | :--- |
+| **Public Ledger** | Election ID, Title, Description, Active Status, Candidate Lists, Vote Tallies | On-Chain Map | Public |
+| **Private Witness** | Voter Seed Phrase, Private Keys, Selected Ballot Choice, Nullifier Secrets | Local Browser Memory | Encrypted (Client-only) |
+
+### Cryptographic Privacy Claim
+Individual choices are never broadcast to the network. The validator only receives:
+1. A valid cryptographic zero-knowledge proof that the sender owns a registered credential.
+2. A unique **Nullifier Hash** (`H(wallet + election)`) which is spent to prevent double-voting.
+Because the nullifier is cryptographically blinded, it is impossible to link the nullifier back to the voter's public wallet address.
 
 ---
 
-## 3. Technology Stack
+## 3. System Architecture & Wallet Flow
 
-- **Frontend**: React (v19), TypeScript, Vite, TailwindCSS (v4), Framer Motion
-- **Smart Contract**: Midnight Compact (v0.23)
-- **Client SDK**: Midnight.js SDK
-- **Testing**: Vitest (Unit/State), Playwright (E2E)
-- **Deployment**: Vercel
+```mermaid
+graph TD
+    A[Voter Browser Client] -->|Connect / Sign| B[Lace Wallet Extension]
+    A -->|Cast Vote / Witness| C[Midnight Client Service]
+    C -->|Zero-Knowledge Proof| D[Midnight Compact Contract]
+    D -->|State Updates| E[Midnight Ledger Nodes]
+```
+
+### Wallet Transaction Flow
+1. **Wallet Enablement**: Client requests access to injected Lace provider: `window.midnight.mnLace.enable()`.
+2. **Witness Creation**: The frontend builds the transaction witness, computing the nullifier locally.
+3. **ZK Generation**: The client requests the proof-server to generate ZK proofs.
+4. **Submission**: The signed transaction is sent via the Lace wallet API to the Midnight node for block inclusion.
 
 ---
 
@@ -50,24 +56,22 @@ votevault/
 ├── contract/                  # Midnight Compact Smart Contract
 │   ├── src/
 │   │   └── index.compact     # Smart contract circuits and state rules
-│   ├── compile.js             # Compiler run script
+│   ├── compile.js             # Compiler simulation script
+│   ├── deploy.js              # Contract deployment script
 │   └── package.json
 ├── frontend/                  # React Single Page Application
 │   ├── src/
 │   │   ├── components/        # Shared components (ThemeToggle, etc.)
-│   │   ├── context/           # App state (VoteVaultContext, ThemeContext)
+│   │   ├── context/           # App state (VoteVaultContext, ThemeContext, MidnightClient)
 │   │   ├── pages/             # Page components (Landing, Dashboard, Results, Admin)
-│   │   ├── tests/             # Vitest unit test cases
-│   │   └── index.css          # Theme CSS variable mappings
-│   ├── tests/                 # Playwright E2E browser tests
+│   │   └── tests/             # Vitest unit test cases
 │   ├── playwright.config.ts   # Playwright configuration
-│   ├── tsconfig.app.json      # App TS configuration
 │   └── vercel.json            # Vercel deployment rules
 ├── docs/                      # Extensive Documentation
+│   ├── audit-report.md        # Submission compliance report
 │   ├── architecture.md
 │   ├── privacy-model.md
 │   ├── deployment.md
-│   ├── testing.md
 │   └── submission-checklist.md
 └── README.md                  # Main project landing documentation
 ```
@@ -78,107 +82,73 @@ votevault/
 
 ### Prerequisites
 - **Node.js**: v20 or later
-- **Midnight Compact Toolchain**: Installed and configured on your shell path.
+- **Docker**: For running native Midnight compilation and node infrastructure.
 
 ### Environment Setup
-Create a `.env` file in `votevault/frontend/` with the following variables:
+Create a `.env` file in `frontend/` with the following variables:
 ```env
-VITE_MIDNIGHT_NETWORK_ID=midnight-devnet-3
-VITE_CONTRACT_ADDRESS=0x5b38...3f1d
-VITE_LACE_WALLET_PROVIDER=lace
+VITE_MIDNIGHT_NODE_URL=http://localhost:8080
+VITE_PROOF_SERVER_URL=http://localhost:5001
 ```
 
 ### Installation
-Clone the repository and install the dependencies:
 ```bash
-# Install frontend packages
-cd votevault/frontend
+# Install root monorepo packages
 npm install
 
-# Install contract packages
-cd ../contract
-npm install
+# Build contract packages
+npm run install:contract && npm run compile:contract
 ```
 
-### Compile the Smart Contract
-Compile the Compact contract to generate ABI, types, and ZK verifier files:
+---
+
+## 6. Smart Contract Deployment Guide
+
+### Compile Compact Contract
+If native `compactc` compiler is not installed, you can use the official Docker compiler wrapper:
 ```bash
-cd votevault/contract
+docker run --rm -v ${PWD}/contract:/code -w /code ghcr.io/midnight-network/compactc:0.23.0 src/index.compact --out dist
+```
+Or use the simulation compiler script:
+```bash
+cd contract
 npm run compile
 ```
 
-### Running Locally
-To launch the frontend dev server:
+### Deploy to Devnet / Testnet
+To deploy, set your admin seed and execute the deploy utility:
 ```bash
-cd votevault/frontend
-npm run dev
+# Export the funded deployer account seed
+$env:VITE_ADMIN_SEED="your_private_seed_here"
+
+# Run deployment
+npm run deploy
 ```
-Open [http://localhost:5173/](http://localhost:5173/) in your web browser.
+Upon success, the script generates `contract/deployed-address.json` containing the resulting contract address.
 
 ---
 
-## 6. Testing Instructions
+## 7. Testing Coverage & CI/CD
 
-### Unit & State Tests (Vitest)
-Runs testing on wallet state updates, ballot tallies, and admin creations:
+### Running Unit & State Tests (Vitest)
 ```bash
-cd votevault/frontend
+cd frontend
 npm run test
 ```
-
-### End-to-End Tests (Playwright)
-Validates complete user flows inside simulated Chromium browsers:
+To generate test coverage reports:
 ```bash
-# Install Playwright browser configurations
-cd votevault/frontend
-npx playwright install
-
-# Run tests
-npm run test:e2e
+npx vitest run --coverage
 ```
 
----
-
-## 7. Privacy Model
-
-VoteVault separates public verification from private identity:
-
-| PUBLIC LEDGER (Transparent) | PRIVATE WITNESS (Encrypted) |
-| :--- | :--- |
-| Election IDs, Titles, and Descriptions | Voter Wallet Seed Phrases & Private Keys |
-| Candidate/Option Registrations | Selected Vote Options |
-| Aggregated Ballot Tallies | Voter Wallet-to-Vote Associations |
-| Cryptographic Nullifier Hashes | User's Individual Vote History |
-
-### ZK-Proof Operations
-1. **Eligibility verification**: The client verifies they possess a registered credential.
-2. **Uniqueness check**: A nullifier hash `H(wallet + election)` is generated. If the nullifier is unused, the vote choice is registered, and the nullifier is recorded publicly to prevent duplicate actions.
+### CI/CD Pipeline
+The GitHub Actions workflow in `.github/workflows/ci.yml` automates:
+1. **Contract Compilation**: Compiling `index.compact`.
+2. **Lint Verification**: Static code checking with `oxlint`.
+3. **Vitest Execution**: Running all wallet connection and vote tallies.
+4. **Vite Production Bundling**: Bundling assets for production.
 
 ---
 
-## 8. Live Demos & Media
+## 8. Midnight Developer Submission Compliance
 
-### Screenshots Section
-Detailed visual walkthroughs can be found in `docs/architecture.md`.
-
-### Demo Video Section
-Watch the [VoteVault Demo Video](https://example.com/demo-video) demonstrating the dark mode toggle and ZK ballot signing flows.
-
-### Live Demo Section
-The project is optimized for deployment at: [https://votevault-dapp.vercel.app](https://votevault-dapp.vercel.app)
-
----
-
-## 9. Product Proposal & Roadmap
-
-### Future Features
-- **Multi-Credential Gates**: Integrate Cardano stake address checkpoints or specific NFT ownership proofs using selective disclosure.
-- **Quadratic Voting**: Support fractioned weight structures based on token balances while keeping final weights hidden.
-- **Offline Ballot Generation**: Pre-sign ballots on isolated hardware and submit them when connected online.
-
----
-
-## 10. License & Acknowledgements
-
-- **License**: MIT
-- **Acknowledgements**: Built with support from the Input Output (IOG) team and the Midnight Network developer community.
+The project is structured to comply with all levels of Midnight Network submission criteria. See details in [submission-checklist.md](docs/submission-checklist.md).
