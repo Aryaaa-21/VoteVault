@@ -1,0 +1,46 @@
+name: VoteVault CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Contract Dependencies and Compile
+        run: |
+          cd contract
+          npm install
+          npm run compile
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Run Linter
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: Run Vitest Unit Tests
+        run: |
+          cd frontend
+          npm run test
+
+      - name: Build Frontend Production Bundle
+        run: |
+          cd frontend
+          npm run build
