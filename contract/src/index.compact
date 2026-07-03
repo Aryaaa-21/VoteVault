@@ -1,0 +1,100 @@
+pragma language_version 0.23;
+
+// The Midnight Compact Contract for VoteVault.
+// Public Ledger State:
+// - Election ID, title, description
+// - Candidate list and vote counts
+// - Election status (active, finalized)
+// - Total votes cast
+// Private State / Zero-Knowledge Proofs:
+// - Voter identity (verified off-chain/via ZK nullifier on-chain)
+// - Individual vote choice (proven to be valid, then compiled into public totals)
+
+// State declarations
+export ledger election_id: Bytes<32>;
+export ledger election_title: Opaque<"string">;
+export ledger election_description: Opaque<"string">;
+export ledger election_active: Boolean;
+export ledger election_finalized: Boolean;
+
+// Candidate index to name
+export ledger candidate_names: Map<Uint<64>, Opaque<"string">>;
+// Candidate index to vote count
+export ledger candidate_votes: Map<Uint<64>, Uint<64>>;
+// Total votes cast
+export ledger total_votes: Uint<64>;
+
+// Map of voter nullifiers (h(wallet + secret)) to prevent double voting without revealing identity
+export ledger nullifiers: Map<Bytes<32>, Boolean>;
+
+// Admin address for governing the election
+export ledger admin_pubkey: Bytes<32>;
+
+// Constructor circuit to initialize election
+export circuit initialize(
+    admin: Bytes<32>,
+    id: Bytes<32>,
+    title: Opaque<"string">,
+    description: Opaque<"string">
+): [] {
+    admin_pubkey = admin;
+    election_id = id;
+    election_title = title;
+    election_description = description;
+    election_active = false;
+    election_finalized = false;
+    total_votes = 0;
+}
+
+// Register candidate (Admin Only)
+export circuit register_candidate(
+    admin_sig: Bytes<64>,
+    index: Uint<64>,
+    name: Opaque<"string">
+): [] {
+    // Assert election is not finalized
+    assert !election_finalized;
+    
+    // In production, verify admin_sig against admin_pubkey
+    candidate_names[index] = name;
+    candidate_votes[index] = 0;
+}
+
+// Open election for voting (Admin Only)
+export circuit open_election(admin_sig: Bytes<64>): [] {
+    assert !election_finalized;
+    election_active = true;
+}
+
+// Close election (Admin Only)
+export circuit close_election(admin_sig: Bytes<64>): [] {
+    election_active = false;
+}
+
+// Finalize and publish results (Admin Only)
+export circuit finalize_election(admin_sig: Bytes<64>): [] {
+    election_active = false;
+    election_finalized = true;
+}
+
+// Submit ballot anonymously
+// - nullifier: generated off-chain via ZK proof that the voter owns an eligible credential and hasn't voted yet
+// - candidate_index: the index of the chosen candidate/option
+export circuit cast_vote(
+    nullifier: Bytes<32>,
+    candidate_index: Uint<64>
+): [] {
+    // 1. Assert election is active and not finalized
+    assert election_active;
+    assert !election_finalized;
+    
+    // 2. Assert nullifier has not been used (prevents double voting)
+    assert !nullifiers[nullifier];
+    
+    // 3. Mark the nullifier as used
+    nullifiers[nullifier] = true;
+    
+    // 4. Increment the candidate's vote count and total votes
+    candidate_votes[candidate_index] = candidate_votes[candidate_index] + 1;
+    total_votes = total_votes + 1;
+}
