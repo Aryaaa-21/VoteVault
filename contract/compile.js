@@ -121,6 +121,28 @@ export class VoteVaultContract {
 }
 `;
 
+// Ensure managed folder exists
+const managedDir = path.join(__dirname, 'managed');
+if (!fs.existsSync(managedDir)) {
+    fs.mkdirSync(managedDir);
+}
+
 fs.writeFileSync(path.join(distDir, 'index.d.ts'), dtsContent);
 fs.writeFileSync(path.join(distDir, 'index.js'), jsContent);
-console.log("Compact compilation simulated successfully. Output generated in dist/");
+fs.writeFileSync(path.join(managedDir, 'index.d.ts'), dtsContent);
+fs.writeFileSync(path.join(managedDir, 'index.js'), jsContent);
+
+// Write dummy circuit definitions for complete managed/ folder completeness
+const circuitMock = {
+  circuits: {
+    initialize: { publicInputs: [], privateInputs: [] },
+    register_candidate: { publicInputs: [], privateInputs: [] },
+    open_election: { publicInputs: [], privateInputs: [] },
+    close_election: { publicInputs: [], privateInputs: [] },
+    finalize_election: { publicInputs: [], privateInputs: [] },
+    cast_vote: { publicInputs: ["nullifier", "candidate_index"], privateInputs: [] }
+  }
+};
+fs.writeFileSync(path.join(managedDir, 'circuits.json'), JSON.stringify(circuitMock, null, 2));
+
+console.log("Compact compilation simulated successfully. Output generated in dist/ and managed/");

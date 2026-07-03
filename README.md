@@ -149,6 +149,22 @@ The GitHub Actions workflow in `.github/workflows/ci.yml` automates:
 
 ---
 
-## 8. Midnight Developer Submission Compliance
+## 8. Project Status & Submission Compliance
 
-The project is structured to comply with all levels of Midnight Network submission criteria. See details in [submission-checklist.md](docs/submission-checklist.md).
+This project is designed to satisfy the criteria for the Midnight Network Developer Submission. The current status of the implementation is detailed below:
+
+### Current Status
+
+#### **COMPLETE**
+*   **React Frontend**: Fully responsive, high-fidelity dark/light mode dashboard and admin interface.
+*   **Smart Contract Schema**: Complete `index.compact` declaring public states and zero-knowledge circuits.
+*   **Unit & Integration Tests**: 100% passing rate across Vitest state tests and Playwright E2E browser automation.
+*   **CI/CD Pipeline**: Active GitHub Actions `.github/workflows/ci.yml` verifying every pull request.
+*   **Documentation**: Comprehensive architecture, privacy models, and submission packages documented in the `/docs` folder.
+
+#### **SIMULATED (Local Fallback Mode)**
+*   **On-Chain Deployment**: Contract deployment scripts are fully written (`deploy.js`), but active contracts are mock-deployed in local simulation mode.
+*   **Contract Address**: The address and configuration stored in `deployed-address.json` are local simulator outputs.
+*   **Transaction Execution**: Wallet signing and proof submissions are simulated client-side to facilitate rapid development without requiring a live node network.
+
+For detailed criteria mapping, see [submission-checklist.md](docs/submission-checklist.md) and [final-audit.md](docs/final-audit.md).

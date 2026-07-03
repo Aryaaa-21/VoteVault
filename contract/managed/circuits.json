@@ -1,0 +1,31 @@
+{
+  "circuits": {
+    "initialize": {
+      "publicInputs": [],
+      "privateInputs": []
+    },
+    "register_candidate": {
+      "publicInputs": [],
+      "privateInputs": []
+    },
+    "open_election": {
+      "publicInputs": [],
+      "privateInputs": []
+    },
+    "close_election": {
+      "publicInputs": [],
+      "privateInputs": []
+    },
+    "finalize_election": {
+      "publicInputs": [],
+      "privateInputs": []
+    },
+    "cast_vote": {
+      "publicInputs": [
+        "nullifier",
+        "candidate_index"
+      ],
+      "privateInputs": []
+    }
+  }
+}

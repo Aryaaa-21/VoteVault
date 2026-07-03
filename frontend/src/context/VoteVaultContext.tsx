@@ -147,6 +147,7 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         contractInstances[elec.id] = contract;
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const connectWallet = async (type: 'lace' | 'walletconnect' | 'metamask') => {
