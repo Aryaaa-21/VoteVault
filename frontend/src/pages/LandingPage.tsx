@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useVoteVault } from '../context/VoteVaultContext';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { MoonPhase } from '../components/MoonPhase';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -189,19 +190,10 @@ export const LandingPage: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Central Privacy Shield Icon */}
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="w-32 h-32 rounded-full glass-panel flex flex-col items-center justify-center shadow-2xl relative z-10 border border-outline"
-            >
-              <motion.div
-                animate={{ scale: [1, 1.08, 1] }}
-                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-              >
-                <span className="material-symbols-outlined text-4xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>shield_lock</span>
-              </motion.div>
-              <span className="font-mono-technical text-[9px] uppercase tracking-widest text-on-surface-variant mt-xs">ZK-SHIELD</span>
-            </motion.div>
+            {/* Central Moon Phase Animation */}
+            <div className="relative z-10 p-sm glass-panel rounded-full border border-outline shadow-2xl flex items-center justify-center bg-surface/40 backdrop-blur-md">
+              <MoonPhase size={100} />
+            </div>
 
             {/* Floating Network Particles */}
             {[...Array(6)].map((_, i) => (
