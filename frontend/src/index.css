@@ -1,0 +1,194 @@
+@import "tailwindcss";
+
+@theme {
+  /* Dynamic colors connected to CSS variable theme mappings */
+  --color-background: var(--background);
+  --color-on-background: var(--on-background);
+  
+  --color-surface: var(--surface);
+  --color-on-surface: var(--on-surface);
+  
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline: var(--outline-variant);
+  --color-outline-variant: var(--outline-variant);
+  
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  
+  /* Constant semantic colors */
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  
+  /* Border radius */
+  --radius-default: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --spacing-lg: 48px;
+  --spacing-xl: 80px;
+  --spacing-margin-desktop: 64px;
+  --spacing-sm: 12px;
+  --spacing-base: 8px;
+  --spacing-md: 24px;
+  --spacing-gutter: 24px;
+  --spacing-max-width: 1200px;
+  --spacing-xs: 4px;
+  --spacing-margin-mobile: 16px;
+
+  /* Font Families */
+  --font-label-caps: "Inter", sans-serif;
+  --font-headline-md: "Inter", sans-serif;
+  --font-display-lg: "Inter", sans-serif;
+  --font-mono-technical: "Courier New", monospace;
+  --font-body-md: "Inter", sans-serif;
+  --font-headline-xl: "Inter", sans-serif;
+  --font-display-lg-mobile: "Inter", sans-serif;
+  --font-body-lg: "Inter", sans-serif;
+}
+
+/* Theme Mappings */
+:root {
+  /* LIGHT MODE DESIGN SPEC */
+  --background: #FFFFFF;
+  --on-background: #111111;
+  --surface: #F8F8F8;
+  --on-surface: #111111;
+  --surface-container: #F8F8F8;
+  --surface-container-low: #F3F3F3;
+  --surface-container-high: #EAEAEA;
+  --surface-container-lowest: #FFFFFF;
+  --on-surface-variant: #666666;
+  --outline-variant: #E5E5E5;
+  --primary: #111111;
+  --on-primary: #FFFFFF;
+  
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glow-color: rgba(0, 0, 0, 0.03);
+}
+
+html.dark {
+  /* DARK MODE DESIGN SPEC */
+  --background: #050505;
+  --on-background: #FFFFFF;
+  --surface: #111111;
+  --on-surface: #FFFFFF;
+  --surface-container: #111111;
+  --surface-container-low: #1A1A1A;
+  --surface-container-high: #222222;
+  --surface-container-lowest: #050505;
+  --on-surface-variant: #AAAAAA;
+  --outline-variant: #222222;
+  --primary: #FFFFFF;
+  --on-primary: #111111;
+  
+  --glass-bg: rgba(10, 10, 10, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glow-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Global Reset & Base Typography */
+html {
+  background-color: var(--background);
+  color: var(--on-background);
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--on-background);
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Focus indicator for keyboard accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+}
+
+/* Glassmorphism custom classes */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tonal-card {
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tonal-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 10px 30px var(--glow-color);
+}
+
+.bento-card {
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glow-hover:hover {
+  box-shadow: 0 10px 30px var(--glow-color);
+  border-color: var(--primary);
+}
+
+.glow-text, .text-glow {
+  text-shadow: 0 0 20px rgba(128, 128, 128, 0.15);
+}
+
+/* Material symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Custom minimal scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--on-surface-variant);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
