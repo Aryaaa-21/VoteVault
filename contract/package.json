@@ -1,0 +1,14 @@
+{
+  "name": "votevault-contract",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "compile": "node compile.js"
+  },
+  "dependencies": {
+    "typescript": "^5.0.0",
+    "votevault-monorepo": "file:.."
+  }
+}
