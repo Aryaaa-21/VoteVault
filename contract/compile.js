@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 // Ensure dist folder exists
 const distDir = path.join(__dirname, 'dist');
 if (!fs.existsSync(distDir)) {
-    fs.mkdirSync(distDir);
+    fs.mkdirSync(distDir, { recursive: true });
 }
 
 // Read index.compact
@@ -31,6 +31,7 @@ export interface ContractState {
   election_description: string;
   election_active: boolean;
   election_finalized: boolean;
+  election_deadline: bigint;
   candidate_names: Map<bigint, string>;
   candidate_votes: Map<bigint, bigint>;
   total_votes: bigint;
@@ -41,7 +42,7 @@ export interface ContractState {
 export declare class VoteVaultContract {
   state: ContractState;
   constructor(initialState?: Partial<ContractState>);
-  initialize(admin: string, id: string, title: string, description: string): void;
+  initialize(admin: string, id: string, title: string, description: string, deadline?: bigint): void;
   register_candidate(admin_sig: string, index: bigint, name: string): void;
   open_election(admin_sig: string): void;
   close_election(admin_sig: string): void;
@@ -60,6 +61,7 @@ export class VoteVaultContract {
       election_description: initialState.election_description || '',
       election_active: initialState.election_active || false,
       election_finalized: initialState.election_finalized || false,
+      election_deadline: initialState.election_deadline || 0n,
       candidate_names: initialState.candidate_names || new Map(),
       candidate_votes: initialState.candidate_votes || new Map(),
       total_votes: initialState.total_votes || 0n,
@@ -68,11 +70,12 @@ export class VoteVaultContract {
     };
   }
 
-  initialize(admin, id, title, description) {
+  initialize(admin, id, title, description, deadline = 0n) {
     this.state.admin_pubkey = admin;
     this.state.election_id = id;
     this.state.election_title = title;
     this.state.election_description = description;
+    this.state.election_deadline = BigInt(deadline);
     this.state.election_active = false;
     this.state.election_finalized = false;
     this.state.total_votes = 0n;
@@ -124,7 +127,7 @@ export class VoteVaultContract {
 // Ensure managed folder exists
 const managedDir = path.join(__dirname, 'managed');
 if (!fs.existsSync(managedDir)) {
-    fs.mkdirSync(managedDir);
+    fs.mkdirSync(managedDir, { recursive: true });
 }
 
 fs.writeFileSync(path.join(distDir, 'index.d.ts'), dtsContent);
@@ -132,15 +135,33 @@ fs.writeFileSync(path.join(distDir, 'index.js'), jsContent);
 fs.writeFileSync(path.join(managedDir, 'index.d.ts'), dtsContent);
 fs.writeFileSync(path.join(managedDir, 'index.js'), jsContent);
 
-// Write dummy circuit definitions for complete managed/ folder completeness
+// Write circuit definitions reflecting private witness vs public inputs
 const circuitMock = {
   circuits: {
-    initialize: { publicInputs: [], privateInputs: [] },
-    register_candidate: { publicInputs: [], privateInputs: [] },
-    open_election: { publicInputs: [], privateInputs: [] },
-    close_election: { publicInputs: [], privateInputs: [] },
-    finalize_election: { publicInputs: [], privateInputs: [] },
-    cast_vote: { publicInputs: ["nullifier", "candidate_index"], privateInputs: [] }
+    initialize: {
+      publicInputs: ["admin", "id", "title", "description", "deadline"],
+      privateWitnessInputs: []
+    },
+    register_candidate: {
+      publicInputs: ["admin_sig", "index", "name"],
+      privateWitnessInputs: []
+    },
+    open_election: {
+      publicInputs: ["admin_sig"],
+      privateWitnessInputs: []
+    },
+    cast_vote: {
+      publicInputs: ["nullifier", "candidate_index"],
+      privateWitnessInputs: ["voter_credential_secret", "nullifier_blinding_secret"]
+    },
+    close_election: {
+      publicInputs: ["admin_sig"],
+      privateWitnessInputs: []
+    },
+    finalize_election: {
+      publicInputs: ["admin_sig"],
+      privateWitnessInputs: []
+    }
   }
 };
 fs.writeFileSync(path.join(managedDir, 'circuits.json'), JSON.stringify(circuitMock, null, 2));

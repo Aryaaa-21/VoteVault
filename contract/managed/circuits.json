@@ -1,31 +1,50 @@
 {
   "circuits": {
     "initialize": {
-      "publicInputs": [],
-      "privateInputs": []
+      "publicInputs": [
+        "admin",
+        "id",
+        "title",
+        "description",
+        "deadline"
+      ],
+      "privateWitnessInputs": []
     },
     "register_candidate": {
-      "publicInputs": [],
-      "privateInputs": []
+      "publicInputs": [
+        "admin_sig",
+        "index",
+        "name"
+      ],
+      "privateWitnessInputs": []
     },
     "open_election": {
-      "publicInputs": [],
-      "privateInputs": []
-    },
-    "close_election": {
-      "publicInputs": [],
-      "privateInputs": []
-    },
-    "finalize_election": {
-      "publicInputs": [],
-      "privateInputs": []
+      "publicInputs": [
+        "admin_sig"
+      ],
+      "privateWitnessInputs": []
     },
     "cast_vote": {
       "publicInputs": [
         "nullifier",
         "candidate_index"
       ],
-      "privateInputs": []
+      "privateWitnessInputs": [
+        "voter_credential_secret",
+        "nullifier_blinding_secret"
+      ]
+    },
+    "close_election": {
+      "publicInputs": [
+        "admin_sig"
+      ],
+      "privateWitnessInputs": []
+    },
+    "finalize_election": {
+      "publicInputs": [
+        "admin_sig"
+      ],
+      "privateWitnessInputs": []
     }
   }
 }

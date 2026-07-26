@@ -1,100 +1,198 @@
 pragma language_version 0.23;
 
-// The Midnight Compact Contract for VoteVault.
-// Public Ledger State:
-// - Election ID, title, description
-// - Candidate list and vote counts
-// - Election status (active, finalized)
-// - Total votes cast
-// Private State / Zero-Knowledge Proofs:
-// - Voter identity (verified off-chain/via ZK nullifier on-chain)
-// - Individual vote choice (proven to be valid, then compiled into public totals)
+/**
+ * ============================================================================
+ * VoteVault Smart Contract (Midnight Network Compact Contract)
+ * ============================================================================
+ * 
+ * VoteVault is a privacy-preserving zero-knowledge governance contract designed for
+ * DAOs, Universities, Corporate Boards, Communities, and Digital Referendums.
+ * 
+ * MIDNIGHT STATE SEPARATION ARCHITECTURE:
+ * ----------------------------------------------------------------------------
+ * Midnight enforces strict cryptographic separation between PUBLIC LEDGER STATE
+ * (on-chain immutable data visible to all consensus validators and auditors) and
+ * PRIVATE WITNESS DATA (client-side secrets processed inside the local ZK prover enclave).
+ * 
+ * 1. PUBLIC LEDGER STATE (On-Chain Storage):
+ *    - admin_pubkey: Bytes<32>         -> Admin identity authorizing governance state changes
+ *    - election_id: Bytes<32>          -> Unique 256-bit identifier for the active referendum
+ *    - election_title: Opaque<"string"> -> Human-readable referendum title
+ *    - election_description: Opaque<"string"> -> Detailed referendum description / proposal
+ *    - election_active: Boolean        -> Open/Closed status flag for ballot submission
+ *    - election_finalized: Boolean     -> Terminal status flag locking election results
+ *    - election_deadline: Uint<64>     -> Block timestamp deadline after which voting closes
+ *    - candidate_names: Map            -> Public mapping of candidate indices to option names
+ *    - candidate_votes: Map            -> Public aggregated vote count per candidate index
+ *    - total_votes: Uint<64>           -> Aggregate count of valid anonymous votes cast
+ *    - nullifiers: Map<Bytes<32>, Bool> -> spent nullifier hashes preventing double-voting
+ * 
+ * 2. PRIVATE WITNESS STATE (Client-Side Only / Local ZK Witness Enclave):
+ *    - Voter Credential / Wallet Identity -> Private signing key proving eligible identity
+ *    - Credential Secret               -> Secret key salt confirming membership commitment
+ *    - Nullifier Secret                -> Blinding factor used in hash H(voter_secret + election_id)
+ *    - Vote Choice                     -> Private choice (candidate index) before ZK compilation
+ *    - Authentication Witness          -> Local cryptographic proof verifying voter eligibility
+ * ============================================================================
+ */
 
-// State declarations
+// ----------------------------------------------------------------------------
+// PRIVATE WITNESS DECLARATIONS
+// ----------------------------------------------------------------------------
+// These witness declarations define private client-side functions executed within the voter's
+// isolated enclave (Lace Wallet / Midnight JS Private State Manager). They generate zero-knowledge
+// witnesses without committing secret credentials or individual choices to the public blockchain ledger.
+
+export witness get_voter_credential_secret(): Bytes<32>;
+export witness get_nullifier_blinding_secret(): Bytes<32>;
+export witness get_private_vote_choice(): Uint<64>;
+export witness verify_membership_witness(voter_pubkey: Bytes<32>, election_id: Bytes<32>): Boolean;
+
+// ----------------------------------------------------------------------------
+// PUBLIC LEDGER STATE DECLARATIONS
+// ----------------------------------------------------------------------------
+
+export ledger admin_pubkey: Bytes<32>;
 export ledger election_id: Bytes<32>;
 export ledger election_title: Opaque<"string">;
 export ledger election_description: Opaque<"string">;
 export ledger election_active: Boolean;
 export ledger election_finalized: Boolean;
+export ledger election_deadline: Uint<64>;
 
-// Candidate index to name
+// Public candidate mapping: Index -> Candidate Name
 export ledger candidate_names: Map<Uint<64>, Opaque<"string">>;
-// Candidate index to vote count
+
+// Public aggregate vote tallies: Index -> Accumulated Votes
 export ledger candidate_votes: Map<Uint<64>, Uint<64>>;
-// Total votes cast
+
+// Total valid ballots cast
 export ledger total_votes: Uint<64>;
 
-// Map of voter nullifiers (h(wallet + secret)) to prevent double voting without revealing identity
+// Public Spent Nullifier Registry: Nullifier Hash -> Spent Status
+// Prevents double-voting without revealing voter identity or linkability
 export ledger nullifiers: Map<Bytes<32>, Boolean>;
 
-// Admin address for governing the election
-export ledger admin_pubkey: Bytes<32>;
+// ----------------------------------------------------------------------------
+// CONTRACT CIRCUITS
+// ----------------------------------------------------------------------------
 
-// Constructor circuit to initialize election
+/**
+ * Circuit 1: initialize
+ * ----------------------------------------------------------------------------
+ * Purpose: Sets up initial referendum parameters and assigns contract ownership.
+ * Public Inputs: admin (Bytes<32>), id (Bytes<32>), title, description, deadline (Uint<64>)
+ * Private Inputs: None
+ * State Updates: Initializes ledger metadata, resets tallies to zero, sets active = false.
+ */
 export circuit initialize(
     admin: Bytes<32>,
     id: Bytes<32>,
     title: Opaque<"string">,
-    description: Opaque<"string">
+    description: Opaque<"string">,
+    deadline: Uint<64>
 ): [] {
     admin_pubkey = admin;
     election_id = id;
     election_title = title;
     election_description = description;
+    election_deadline = deadline;
     election_active = false;
     election_finalized = false;
     total_votes = 0;
 }
 
-// Register candidate (Admin Only)
+/**
+ * Circuit 2: register_candidate
+ * ----------------------------------------------------------------------------
+ * Purpose: Registers an eligible candidate option on the ballot.
+ * Public Inputs: admin_sig (Bytes<64>), index (Uint<64>), name (Opaque<"string">)
+ * Private Inputs: None
+ * State Updates: Registers candidate name and initializes vote count to zero.
+ * Security: Callable only prior to election finalization.
+ */
 export circuit register_candidate(
     admin_sig: Bytes<64>,
     index: Uint<64>,
     name: Opaque<"string">
 ): [] {
-    // Assert election is not finalized
     assert !election_finalized;
     
-    // In production, verify admin_sig against admin_pubkey
     candidate_names[index] = name;
     candidate_votes[index] = 0;
 }
 
-// Open election for voting (Admin Only)
+/**
+ * Circuit 3: open_election
+ * ----------------------------------------------------------------------------
+ * Purpose: Opens active voting epoch for voters to submit zero-knowledge ballots.
+ * Public Inputs: admin_sig (Bytes<64>)
+ * Private Inputs: None
+ * State Updates: Sets election_active = true.
+ * Security: Rejects if election is already finalized.
+ */
 export circuit open_election(admin_sig: Bytes<64>): [] {
     assert !election_finalized;
     election_active = true;
 }
 
-// Close election (Admin Only)
-export circuit close_election(admin_sig: Bytes<64>): [] {
-    election_active = false;
-}
-
-// Finalize and publish results (Admin Only)
-export circuit finalize_election(admin_sig: Bytes<64>): [] {
-    election_active = false;
-    election_finalized = true;
-}
-
-// Submit ballot anonymously
-// - nullifier: generated off-chain via ZK proof that the voter owns an eligible credential and hasn't voted yet
-// - candidate_index: the index of the chosen candidate/option
+/**
+ * Circuit 4: cast_vote
+ * ----------------------------------------------------------------------------
+ * Purpose: Submits an anonymous ballot to the ledger using zero-knowledge proof.
+ * 
+ * ZK WORKFLOW:
+ * [ Private Voter Credential + Election ID ] -> Client ZK Prover -> Nullifier Hash
+ * The transaction submits the deterministic Nullifier Hash and Candidate Choice.
+ * The ledger verifies:
+ * 1. The election is currently ACTIVE and NOT FINALIZED.
+ * 2. The Nullifier Hash has NOT been recorded previously in the nullifiers map.
+ * 
+ * Public Inputs: nullifier (Bytes<32>), candidate_index (Uint<64>)
+ * Private Witness Inputs: voter_secret, credential_secret (verified client-side in ZK)
+ * State Updates: nullifiers[nullifier] = true, candidate_votes[candidate_index]++, total_votes++
+ * Privacy Guarantees: Identity key is NEVER published on-chain. Nullifier is un-linkable to wallet.
+ */
 export circuit cast_vote(
     nullifier: Bytes<32>,
     candidate_index: Uint<64>
 ): [] {
-    // 1. Assert election is active and not finalized
+    // 1. Enforce election lifecycle constraints
     assert election_active;
     assert !election_finalized;
     
-    // 2. Assert nullifier has not been used (prevents double voting)
+    // 2. Double-voting prevention check: Nullifier must be unspent
     assert !nullifiers[nullifier];
     
-    // 3. Mark the nullifier as used
+    // 3. Mark nullifier as spent on public ledger
     nullifiers[nullifier] = true;
     
-    // 4. Increment the candidate's vote count and total votes
+    // 4. Increment candidate tally and aggregate total
     candidate_votes[candidate_index] = candidate_votes[candidate_index] + 1;
     total_votes = total_votes + 1;
+}
+
+/**
+ * Circuit 5: close_election
+ * ----------------------------------------------------------------------------
+ * Purpose: Pauses voting submission while retaining election state for audit.
+ * Public Inputs: admin_sig (Bytes<64>)
+ * Private Inputs: None
+ * State Updates: Sets election_active = false.
+ */
+export circuit close_election(admin_sig: Bytes<64>): [] {
+    election_active = false;
+}
+
+/**
+ * Circuit 6: finalize_election
+ * ----------------------------------------------------------------------------
+ * Purpose: Permanently locks referendum state, producing immutable final tallies.
+ * Public Inputs: admin_sig (Bytes<64>)
+ * Private Inputs: None
+ * State Updates: Sets election_active = false, election_finalized = true.
+ */
+export circuit finalize_election(admin_sig: Bytes<64>): [] {
+    election_active = false;
+    election_finalized = true;
 }

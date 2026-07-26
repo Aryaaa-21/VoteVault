@@ -7,6 +7,7 @@ export class VoteVaultContract {
       election_description: initialState.election_description || '',
       election_active: initialState.election_active || false,
       election_finalized: initialState.election_finalized || false,
+      election_deadline: initialState.election_deadline || 0n,
       candidate_names: initialState.candidate_names || new Map(),
       candidate_votes: initialState.candidate_votes || new Map(),
       total_votes: initialState.total_votes || 0n,
@@ -15,11 +16,12 @@ export class VoteVaultContract {
     };
   }
 
-  initialize(admin, id, title, description) {
+  initialize(admin, id, title, description, deadline = 0n) {
     this.state.admin_pubkey = admin;
     this.state.election_id = id;
     this.state.election_title = title;
     this.state.election_description = description;
+    this.state.election_deadline = BigInt(deadline);
     this.state.election_active = false;
     this.state.election_finalized = false;
     this.state.total_votes = 0n;

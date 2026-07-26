@@ -5,6 +5,7 @@ export interface ContractState {
   election_description: string;
   election_active: boolean;
   election_finalized: boolean;
+  election_deadline: bigint;
   candidate_names: Map<bigint, string>;
   candidate_votes: Map<bigint, bigint>;
   total_votes: bigint;
@@ -15,7 +16,7 @@ export interface ContractState {
 export declare class VoteVaultContract {
   state: ContractState;
   constructor(initialState?: Partial<ContractState>);
-  initialize(admin: string, id: string, title: string, description: string): void;
+  initialize(admin: string, id: string, title: string, description: string, deadline?: bigint): void;
   register_candidate(admin_sig: string, index: bigint, name: string): void;
   open_election(admin_sig: string): void;
   close_election(admin_sig: string): void;

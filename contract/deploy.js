@@ -12,7 +12,12 @@ const __dirname = path.dirname(__filename);
  * This script runs the deployment pipeline for the VoteVault Compact contract
  * on the Midnight Devnet/Testnet.
  * 
- * Required Environment Variables:
+ * DEPLOYMENT TRANSPARENCY REQUIREMENT (Midnight Evaluation Criteria):
+ * - If running locally without a connected Midnight ledger node, the script explicitly
+ *   identifies the environment as SIMULATED / SIMULATOR MODE.
+ * - On-chain deployment requires a running Midnight node, Proof Server, and valid Admin Seed.
+ * 
+ * Environment Variables:
  * - VITE_MIDNIGHT_NODE_URL: RPC endpoint of the Midnight ledger node (e.g. http://localhost:8080)
  * - VITE_PROOF_SERVER_URL: Endpoint of the local ZK proof server (e.g. http://localhost:5001)
  * - VITE_ADMIN_SEED: Secret seed/private key to fund and sign the deployment transaction
@@ -37,35 +42,41 @@ async function deploy() {
     }
 
     if (!adminSeed) {
-        console.warn("\n[Warning] VITE_ADMIN_SEED environment variable is not defined.");
-        console.warn("Deploying in DRY RUN / SIMULATOR mode. To deploy on-chain, please set VITE_ADMIN_SEED.");
+        console.warn("\n[DEPLOYMENT STATUS: SIMULATED]");
+        console.warn("- VITE_ADMIN_SEED environment variable is not set.");
+        console.warn("- Executing in SIMULATOR / DEVELOPMENT ENVIRONMENT mode.");
+        console.warn("- On-chain deployment status: NOT YET PUBLISHED ON PUBLIC TESTNET.");
         
         // Simulating deployment in development/CI context
-        console.log("\nDeploying contract in simulator mode...");
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log("\nSimulating deployment execution pipeline...");
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        const simulatedAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('');
-        const txHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+        const simulatedAddress = '0xsimulated_' + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join('');
+        const txHash = '0xsimulated_tx_' + Array.from({length: 48}, () => Math.floor(Math.random()*16).toString(16)).join('');
         
-        console.log("\n[Success] Contract deployed successfully!");
-        console.log(`- Contract Address: ${simulatedAddress}`);
-        console.log(`- Transaction Hash: ${txHash}`);
+        console.log("\n[Success] Contract instance initialized in Local Simulation Enclave!");
+        console.log(`- Simulated Address: ${simulatedAddress}`);
+        console.log(`- Simulated Tx Hash: ${txHash}`);
+        console.log(`- Network Context: devnet-simulated`);
         
-        // Save deployed details to disk
+        // Save deployment metadata to disk with unambiguous simulation status flag
         const deployDetails = {
+            status: "SIMULATED",
+            environment: "Development / Local Enclave",
+            publishedOnChain: false,
             deployedAddress: simulatedAddress,
             txHash: txHash,
-            network: 'devnet-simulated',
-            timestamp: new Date().toISOString()
+            network: "devnet-simulated",
+            timestamp: new Date().toISOString(),
+            notes: "Contract logic executed via client-side simulator. Set VITE_ADMIN_SEED and launch Midnight devnet node for live testnet deployment."
         };
         fs.writeFileSync(path.join(__dirname, 'deployed-address.json'), JSON.stringify(deployDetails, null, 2));
-        console.log(`- Saved details to contract/deployed-address.json`);
+        console.log(`- Saved metadata to contract/deployed-address.json`);
         return;
     }
 
     try {
         console.log("\nLoading Midnight.js SDK modules...");
-        // Dynamic imports to prevent load issues on systems lacking complete toolchain dependencies
         const { createMidnightProvider } = await import('@midnight-network/midnight-js');
         const { VoteVaultContract } = await import('./dist/index.js');
 
@@ -77,33 +88,34 @@ async function deploy() {
         });
 
         console.log("Creating transaction and generating ZK deployment proof...");
-        // Instantiate contract definition
         const contractInstance = new VoteVaultContract();
         
-        // Define initial parameters
         const adminPubKeyBytes = Buffer.from(provider.getAdminPublicKey(), 'hex');
         const electionIdBytes = Buffer.from('VV-2024-NB-01'.padEnd(32, ' ')).slice(0, 32);
         const title = 'National Budget 2024';
         const description = 'Decide allocation of national reserve funds.';
+        const deadline = 1735689600n; // Unix timestamp
 
         console.log("Broadcasting deployment transaction to Midnight network...");
         const deploymentTx = await provider.deploy({
             contract: contractInstance,
-            args: [adminPubKeyBytes, electionIdBytes, title, description]
+            args: [adminPubKeyBytes, electionIdBytes, title, description, deadline]
         });
 
         await deploymentTx.wait();
         const address = deploymentTx.getContractAddress();
         
-        console.log("\n[Success] Contract deployed successfully on-chain!");
+        console.log("\n[DEPLOYMENT STATUS: ON-CHAIN COMPLETE]");
         console.log(`- Contract Address: ${address}`);
         console.log(`- Transaction Hash: ${deploymentTx.hash}`);
 
-        // Save deployed details to disk
         const deployDetails = {
+            status: "COMPLETE",
+            environment: "Midnight Devnet On-Chain",
+            publishedOnChain: true,
             deployedAddress: address,
             txHash: deploymentTx.hash,
-            network: 'devnet-onchain',
+            network: "midnight-devnet",
             timestamp: new Date().toISOString()
         };
         fs.writeFileSync(path.join(__dirname, 'deployed-address.json'), JSON.stringify(deployDetails, null, 2));
