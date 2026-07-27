@@ -5,13 +5,15 @@ interface MoonPhaseProps {
   speed?: number; // duration of a full cycle in seconds
   interactive?: boolean;
   isPaused?: boolean;
+  className?: string;
 }
 
 export const MoonPhase: React.FC<MoonPhaseProps> = ({
   size = 120,
   speed = 15,
   interactive = true,
-  isPaused = false
+  isPaused = false,
+  className = ''
 }) => {
   const [percent, setPercent] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -79,7 +81,7 @@ export const MoonPhase: React.FC<MoonPhaseProps> = ({
 
   return (
     <div 
-      className="flex flex-col items-center justify-center relative select-none"
+      className={`flex flex-col items-center justify-center relative select-none ${className}`}
       onMouseEnter={() => interactive && setIsHovered(true)}
       onMouseLeave={() => interactive && setIsHovered(false)}
     >

@@ -1,538 +1,250 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useVoteVault } from '../context/VoteVaultContext';
-import { ThemeToggle } from '../components/ThemeToggle';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Navbar } from '../components/Navbar';
+import { Footer } from '../components/Footer';
 import { MoonPhase } from '../components/MoonPhase';
+import { PrivacyDiagram } from '../components/PrivacyDiagram';
+import { Shield, Vote, Lock, Cpu, ArrowRight, ChevronDown, Sparkles } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { walletConnected } = useVoteVault();
-  const [scrolled, setScrolled] = useState(false);
-  const [isVisualHovered, setIsVisualHovered] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const stats = [
+    { label: 'Total Ballots Cast', value: '2,784,360+' },
+    { label: 'Active Referendums', value: '14' },
+    { label: 'Spent ZK Nullifiers', value: '100% Unique' },
+    { label: 'Identity Protection Rate', value: '100.0%' }
+  ];
 
-  const handleLaunchApp = () => {
-    if (walletConnected) {
-      navigate('/dashboard');
-    } else {
-      navigate('/connect');
+  const features = [
+    {
+      icon: Shield,
+      title: 'Zero-Knowledge Anonymity',
+      description: 'Cast votes verified by zero-knowledge proofs. Your identity key and wallet address are never committed on-chain.'
+    },
+    {
+      icon: Lock,
+      title: 'Double-Voting Prevention',
+      description: 'Deterministic 32-byte spent nullifiers ensure each eligible voter can submit exactly one ballot per election.'
+    },
+    {
+      icon: Vote,
+      title: 'Public Ledger Verifiability',
+      description: 'Aggregate election tallies are updated transparently on Midnight consensus nodes for audit verification.'
+    },
+    {
+      icon: Cpu,
+      title: 'Local Client Enclave',
+      description: 'Private witness compilation and SNARK proofs execute locally inside browser memory using Lace Wallet.'
     }
-  };
+  ];
 
-  // Animation variants
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 30, filter: 'blur(4px)' },
-    visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } }
-  };
+  const roadmap = [
+    { phase: 'Phase 1 - Q3 2024', title: 'Compact Smart Contract Core', desc: 'Separate Public Ledger State from Private Witness Data with 6 ZK circuits.' },
+    { phase: 'Phase 2 - Q4 2024', title: 'Lace Wallet Integration', desc: 'Injected provider connector and local browser enclave witness prover.' },
+    { phase: 'Phase 3 - Q1 2025', title: 'Multi-Chain DAO Governance', desc: 'Cross-chain Cardano staking voting rights mapping and quadratic voting.' },
+    { phase: 'Phase 4 - Q2 2025', title: 'Institutional Enterprise Suite', desc: 'Multi-sig candidate approval and encrypted shareholder voting tools.' }
+  ];
 
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
+  const testimonials = [
+    {
+      quote: "VoteVault enabled our DAO to conduct high-stakes treasury referendums without exposing voter wallets to targeted bribery or whale intimidation.",
+      author: "Alex V.",
+      role: "Governance Lead, Aether DAO"
+    },
+    {
+      quote: "The zero-knowledge nullifier architecture gives our university student union complete voter confidence and audit compliance.",
+      author: "Dr. Elena Rostova",
+      role: "Student Association Senate Director"
     }
-  };
+  ];
+
+  const faqs = [
+    {
+      q: "How does VoteVault guarantee my vote is anonymous?",
+      a: "VoteVault uses Midnight's dual-state execution model. Your voter credential secret and choice are kept in browser memory. Only a one-way ZK nullifier hash and option index choice are submitted to consensus nodes."
+    },
+    {
+      q: "How is double-voting prevented if my identity is secret?",
+      a: "When you cast a vote, your client computes a deterministic nullifier hash N = SHA256(voter_secret || election_id || salt). The Compact contract checks that N is unspent and records N = true. Any duplicate attempt generates the exact same N and is immediately rejected."
+    },
+    {
+      q: "Which wallets are supported?",
+      a: "VoteVault natively supports Lace Wallet (the official Midnight and Cardano wallet extension), injected EVM browser wallets, WalletConnect 2.0, and local developer enclave simulators."
+    }
+  ];
 
   return (
-    <div className="bg-background text-on-background min-h-screen flex flex-col font-body-md transition-colors duration-300">
-      
-      {/* Premium Navigation Bar */}
-      <nav className={`fixed top-0 w-full z-50 border-b transition-all duration-300 ${
-        scrolled 
-          ? 'bg-background/80 backdrop-blur-md border-outline py-3 shadow-sm' 
-          : 'bg-transparent border-transparent py-5'
-      }`}>
-        <div className="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full max-w-max-width mx-auto">
-          <Link to="/" className="flex items-center gap-base no-underline text-primary">
-            <span className="material-symbols-outlined text-primary text-2xl">account_balance</span>
-            <span className="font-headline-md text-xl font-bold tracking-tight text-primary">VoteVault</span>
-          </Link>
-          <div className="hidden md:flex gap-lg">
-            <Link className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors duration-200" to="/dashboard">Elections</Link>
-            <Link className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors duration-200" to="/dashboard">Results</Link>
-            <a className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors duration-200" href="#privacy-section">Privacy</a>
-            <a className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors duration-200" href="#timeline-section">How It Works</a>
-          </div>
-          <div className="flex items-center gap-sm">
-            <ThemeToggle />
-            {walletConnected ? (
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="bg-primary text-on-primary px-lg py-sm rounded font-label-caps text-xs font-bold tracking-wide hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              >
-                Dashboard
-              </button>
-            ) : (
-              <button
-                onClick={() => navigate('/connect')}
-                className="bg-primary text-on-primary px-lg py-sm rounded font-label-caps text-xs font-bold tracking-wide hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              >
-                Connect Wallet
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-[#0B0B0C] text-[#F5F5F5] font-body flex flex-col">
+      <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center pt-24 pb-xl overflow-hidden">
-        {/* Background Gradients */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-on-background/5 blur-[100px] rounded-full pointer-events-none"></div>
-        
-        <div className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop w-full grid grid-cols-1 lg:grid-cols-12 gap-xl items-center relative z-10">
-          
-          {/* Left Side Content */}
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            variants={staggerContainer}
-            className="lg:col-span-6 space-y-lg text-left"
-          >
-            <motion.h1 
-              variants={fadeInUp}
-              className="font-display-lg text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-primary leading-[1.08] glow-text"
-            >
-              Vote Privately.<br />
-              Verify Publicly.
-            </motion.h1>
-            
-            <motion.p 
-              variants={fadeInUp}
-              className="text-on-surface-variant font-body-lg text-lg max-w-[500px] leading-relaxed"
-            >
-              A privacy-first voting protocol powered by selective disclosure and zero-knowledge technology.
-            </motion.p>
-            
-            <motion.div 
-              variants={fadeInUp}
-              className="flex flex-col sm:flex-row gap-sm pt-base"
-            >
-              <button
-                onClick={handleLaunchApp}
-                className="bg-primary text-on-primary px-xl py-md rounded font-label-caps text-xs font-bold tracking-wider hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-lg"
-              >
-                Launch App
-              </button>
-              <a
-                href="#timeline-section"
-                className="flex items-center justify-center border border-outline text-primary px-xl py-md rounded font-label-caps text-xs font-bold tracking-wider hover:bg-surface transition-all cursor-pointer"
-              >
-                Learn More
-              </a>
-            </motion.div>
-            
-            {/* Hero Stats */}
-            <motion.div 
-              variants={fadeInUp}
-              className="grid grid-cols-3 gap-md border-t border-outline pt-lg mt-xl"
-            >
-              <div>
-                <div className="text-2xl md:text-3xl font-bold text-primary tracking-tight">1.2M+</div>
-                <div className="font-label-caps text-[10px] uppercase tracking-wider text-on-surface-variant mt-1">Votes Cast</div>
-              </div>
-              <div>
-                <div className="text-2xl md:text-3xl font-bold text-primary tracking-tight">45</div>
-                <div className="font-label-caps text-[10px] uppercase tracking-wider text-on-surface-variant mt-1">Active Elections</div>
-              </div>
-              <div>
-                <div className="text-2xl md:text-3xl font-bold text-primary tracking-tight">100%</div>
-                <div className="font-label-caps text-[10px] uppercase tracking-wider text-on-surface-variant mt-1">Verifiable</div>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* Right Side Visual: Privacy Network Visualization */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-            onMouseEnter={() => setIsVisualHovered(true)}
-            onMouseLeave={() => setIsVisualHovered(false)}
-            className="lg:col-span-6 flex justify-center items-center relative aspect-square w-full max-w-[480px] mx-auto cursor-pointer"
-          >
-            {/* Animated Orbits & Central Moon (Unlike Directions) in 3D Perspective */}
-            <div 
-              className="absolute inset-0 flex items-center justify-center pointer-events-none"
-              style={{
-                perspective: '1000px',
-                transformStyle: 'preserve-3d'
-              }}
-            >
-              {/* Outer Orbit (Clockwise) */}
-              <div 
-                className="absolute w-[92%] h-[92%] rounded-full border border-solid border-on-background/18 flex items-center justify-center animate-orbit-cw"
-                style={{ 
-                  transform: 'rotateX(66deg) rotateY(-18deg)',
-                  transformStyle: 'preserve-3d',
-                  animationPlayState: isVisualHovered ? 'paused' : 'running',
-                  '--duration': '45s'
-                } as React.CSSProperties}
-              >
-                {/* Large planet */}
-                <div 
-                  className="absolute top-0 transform -translate-y-1/2 w-4 h-4 rounded-full bg-on-background animate-planet-pulse"
-                  style={{ animationDelay: '0s' }}
-                ></div>
-                {/* Small planet */}
-                <div 
-                  className="absolute bottom-0 transform translate-y-1/2 w-2 h-2 rounded-full bg-on-background/80 animate-planet-pulse"
-                  style={{ animationDelay: '0.6s' }}
-                ></div>
+      <main className="flex-1">
+        {/* HERO SECTION */}
+        <section className="relative pt-20 pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7 space-y-8 text-left z-10">
+              <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-[#C9C9C9]">
+                <Sparkles className="w-3.5 h-3.5 text-[#6FCF97]" />
+                <span>Powered by Midnight Network Zero-Knowledge Contracts</span>
               </div>
 
-              {/* Middle Orbit (Counter-Clockwise) */}
-              <div 
-                className="absolute w-[66%] h-[66%] rounded-full border border-solid border-on-background/28 flex items-center justify-center animate-orbit-ccw"
-                style={{ 
-                  transform: 'rotateX(66deg) rotateY(-18deg)',
-                  transformStyle: 'preserve-3d',
-                  animationPlayState: isVisualHovered ? 'paused' : 'running',
-                  '--duration': '30s'
-                } as React.CSSProperties}
-              >
-                {/* Medium planet */}
-                <div 
-                  className="absolute right-0 transform translate-x-1/2 w-3.5 h-3.5 rounded-full bg-on-background animate-planet-pulse"
-                  style={{ animationDelay: '1.2s' }}
-                ></div>
-                {/* Micro planet */}
-                <div 
-                  className="absolute left-0 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-on-background/60 animate-planet-pulse"
-                  style={{ animationDelay: '1.8s' }}
-                ></div>
-              </div>
+              <h1 className="font-heading text-4xl sm:text-6xl font-bold tracking-tight text-[#F5F5F5] leading-[1.1]">
+                Vote Privately. <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#C9C9C9] to-[#8E8E93]">
+                  Verify Publicly.
+                </span>
+              </h1>
 
-              {/* Inner Orbit (Clockwise) */}
-              <div 
-                className="absolute w-[40%] h-[40%] rounded-full border border-solid border-on-background/38 flex items-center justify-center animate-orbit-cw"
-                style={{ 
-                  transform: 'rotateX(66deg) rotateY(-18deg)',
-                  transformStyle: 'preserve-3d',
-                  animationPlayState: isVisualHovered ? 'paused' : 'running',
-                  '--duration': '18s'
-                } as React.CSSProperties}
-              >
-                {/* Medium-small planet */}
-                <div 
-                  className="absolute top-0 transform -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-on-background animate-planet-pulse"
-                  style={{ animationDelay: '2.4s' }}
-                ></div>
-              </div>
-
-              {/* Central Moon Phase Animation (No background container) */}
-              {/* Placed at translateZ(0px) in the same preserve-3d container for Z-depth sorting */}
-              <div 
-                className="relative pointer-events-auto"
-                style={{ 
-                  transform: 'translateZ(0px)',
-                  transformStyle: 'preserve-3d'
-                }}
-              >
-                <MoonPhase size={140} isPaused={isVisualHovered} />
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Feature Cards Section */}
-      <section className="py-xl px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto w-full relative">
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-          className="mb-xl text-left"
-        >
-          <h2 className="font-headline-xl text-3xl font-bold tracking-tight text-primary mb-xs">Core Security Architecture</h2>
-          <p className="text-on-surface-variant font-body-md">Advanced cryptographic primitives ensuring absolute auditability.</p>
-        </motion.div>
-
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={staggerContainer}
-          className="grid grid-cols-1 md:grid-cols-3 gap-gutter"
-        >
-          {/* Card 1 */}
-          <motion.div 
-            variants={fadeInUp}
-            whileHover={{ scale: 1.03 }}
-            className="tonal-card p-lg rounded-xl flex flex-col justify-between group cursor-default"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-lg bg-surface-container-high border border-outline flex items-center justify-center mb-md text-primary">
-                <span className="material-symbols-outlined text-2xl">shield_lock</span>
-              </div>
-              <h3 className="font-headline-md text-lg font-bold text-primary mb-sm">Zero-Knowledge Proofs</h3>
-              <p className="text-on-surface-variant font-body-md text-sm leading-relaxed">
-                Prove voting eligibility commitments dynamically without publishing raw address links or ballot choices.
+              <p className="text-base sm:text-lg text-[#8E8E93] max-w-2xl leading-relaxed">
+                Enterprise-grade privacy governance platform. Cast anonymous ballots with zero-knowledge cryptographic proofs on Midnight, preventing voter intimidation while ensuring 100% public tally verifiability.
               </p>
-            </div>
-          </motion.div>
 
-          {/* Card 2 */}
-          <motion.div 
-            variants={fadeInUp}
-            whileHover={{ scale: 1.03 }}
-            className="tonal-card p-lg rounded-xl flex flex-col justify-between group cursor-default"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-lg bg-surface-container-high border border-outline flex items-center justify-center mb-md text-primary">
-                <span className="material-symbols-outlined text-2xl">key</span>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-2">
+                {/* Playwright locator: button:has-text("Connect Wallet") */}
+                <button
+                  onClick={() => navigate('/connect')}
+                  className="px-6 py-3.5 rounded-xl bg-[#F5F5F5] text-[#0B0B0C] font-bold text-sm hover:bg-[#C9C9C9] transition-all shadow-xl hover:shadow-white/10 active:scale-95 flex items-center justify-center space-x-2 group"
+                >
+                  <span>Connect Wallet</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="px-6 py-3.5 rounded-xl bg-white/5 border border-white/10 text-[#F5F5F5] font-semibold text-sm hover:bg-white/10 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <Vote className="w-4 h-4 text-[#6FCF97]" />
+                  <span>Explore Referendums</span>
+                </button>
               </div>
-              <h3 className="font-headline-md text-lg font-bold text-primary mb-sm">Non-custodial Auth</h3>
-              <p className="text-on-surface-variant font-body-md text-sm leading-relaxed">
-                Connect and authenticate sessions instantly using Cardano and Lace wallet cryptographic credential chains.
-              </p>
-            </div>
-          </motion.div>
 
-          {/* Card 3 */}
-          <motion.div 
-            variants={fadeInUp}
-            whileHover={{ scale: 1.03 }}
-            className="tonal-card p-lg rounded-xl flex flex-col justify-between group cursor-default"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-lg bg-surface-container-high border border-outline flex items-center justify-center mb-md text-primary">
-                <span className="material-symbols-outlined text-2xl">data_exploration</span>
+              {/* Stats Bar */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-white/10">
+                {stats.map((s, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="font-heading font-bold text-lg text-[#F5F5F5]">{s.value}</div>
+                    <div className="text-[11px] font-mono text-[#8E8E93]">{s.label}</div>
+                  </div>
+                ))}
               </div>
-              <h3 className="font-headline-md text-lg font-bold text-primary mb-sm">Auditable Inclusion</h3>
-              <p className="text-on-surface-variant font-body-md text-sm leading-relaxed">
-                Independent nodes compile and verify execution outputs, anchoring public receipt logs to the mainnet.
-              </p>
             </div>
-          </motion.div>
-        </motion.div>
-      </section>
 
-      {/* How it Works: Timeline Visualization */}
-      <section id="timeline-section" className="py-xl bg-surface border-t border-b border-outline scroll-mt-20 w-full">
-        <div className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop">
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInUp}
-            className="mb-xl text-left"
-          >
-            <h2 className="font-headline-xl text-3xl font-bold tracking-tight text-primary mb-xs">Decentralized Governance Timeline</h2>
-            <p className="text-on-surface-variant font-body-md">The end-to-end flow of an anonymized zero-knowledge vote.</p>
-          </motion.div>
-
-          {/* Timeline Wrapper */}
-          <div className="relative mt-xl pl-lg md:pl-0">
-            {/* Center Vertical Line (Desktop only) */}
-            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-outline-variant transform md:-translate-x-1/2"></div>
-            
-            {/* Step 1 */}
-            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between mb-xl">
-              <div className="absolute left-[-24px] md:left-1/2 w-8 h-8 rounded-full border border-outline bg-background flex items-center justify-center transform md:-translate-x-1/2 z-10 text-xs font-bold text-primary">
-                1
+            {/* Right Hero Graphic: 3D Lunar Orbit Visualization */}
+            <div className="lg:col-span-5 flex justify-center z-0 relative">
+              <div className="relative w-80 h-80 sm:w-96 sm:h-96 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/10 via-transparent to-transparent blur-3xl opacity-50 animate-pulse" />
+                <MoonPhase size={220} className="relative z-10 drop-shadow-2xl" />
               </div>
-              <motion.div 
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="w-full md:w-[45%] glass-card p-md rounded-lg"
-              >
-                <h4 className="font-headline-md text-base font-bold text-primary mb-xs">Connect Wallet</h4>
-                <p className="text-on-surface-variant text-sm">Link your secure identity credentials or public Web3 wallet to authorize a session securely.</p>
-              </motion.div>
-              <div className="hidden md:block w-[45%]"></div>
             </div>
-
-            {/* Step 2 */}
-            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between mb-xl">
-              <div className="absolute left-[-24px] md:left-1/2 w-8 h-8 rounded-full border border-outline bg-background flex items-center justify-center transform md:-translate-x-1/2 z-10 text-xs font-bold text-primary">
-                2
-              </div>
-              <div className="hidden md:block w-[45%]"></div>
-              <motion.div 
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="w-full md:w-[45%] glass-card p-md rounded-lg"
-              >
-                <h4 className="font-headline-md text-base font-bold text-primary mb-xs">Verify Eligibility</h4>
-                <p className="text-on-surface-variant text-sm">Generate a local witness to verify your active inclusion parameters within zero-knowledge limits.</p>
-              </motion.div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between mb-xl">
-              <div className="absolute left-[-24px] md:left-1/2 w-8 h-8 rounded-full border border-outline bg-background flex items-center justify-center transform md:-translate-x-1/2 z-10 text-xs font-bold text-primary">
-                3
-              </div>
-              <motion.div 
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="w-full md:w-[45%] glass-card p-md rounded-lg"
-              >
-                <h4 className="font-headline-md text-base font-bold text-primary mb-xs">Cast Secure Ballot</h4>
-                <p className="text-on-surface-variant text-sm">Submit your encrypted selection. A private nullifier hash registers consensus to protect your choice.</p>
-              </motion.div>
-              <div className="hidden md:block w-[45%]"></div>
-            </div>
-
-            {/* Step 4 */}
-            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between">
-              <div className="absolute left-[-24px] md:left-1/2 w-8 h-8 rounded-full border border-outline bg-background flex items-center justify-center transform md:-translate-x-1/2 z-10 text-xs font-bold text-primary">
-                4
-              </div>
-              <div className="hidden md:block w-[45%]"></div>
-              <motion.div 
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="w-full md:w-[45%] glass-card p-md rounded-lg"
-              >
-                <h4 className="font-headline-md text-base font-bold text-primary mb-xs">Verify Inclusion</h4>
-                <p className="text-on-surface-variant text-sm">Verify your vote has been compiled without exposing your identity or public key.</p>
-              </motion.div>
-            </div>
-
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Interactive Privacy Model Section */}
-      <section id="privacy-section" className="py-xl px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto w-full scroll-mt-20">
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-          className="mb-xl text-left"
-        >
-          <h2 className="font-headline-xl text-3xl font-bold tracking-tight text-primary mb-xs">The Privacy Model</h2>
-          <p className="text-on-surface-variant font-body-md">Understand which transaction fields map directly to the ledger consensus.</p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
-          {/* Public Data Card */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="border border-outline rounded-xl p-lg flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-md">
-                <span className="font-label-caps text-xs font-semibold text-primary bg-primary/10 px-sm py-xs rounded">Public Ledger</span>
-                <span className="material-symbols-outlined text-green-500">visibility</span>
-              </div>
-              <h3 className="font-headline-md text-lg font-bold text-primary mb-sm">Visible Information</h3>
-              <p className="text-on-surface-variant text-sm leading-relaxed mb-lg">
-                Required data metrics for public tally audits. Anyone can confirm mathematical execution parameters.
-              </p>
-              <div className="space-y-sm font-mono-technical text-xs border-t border-outline-variant pt-md">
-                <div className="flex justify-between py-xs border-b border-outline-variant/40">
-                  <span>Election Results:</span>
-                  <span className="text-primary font-bold">PUBLIC</span>
-                </div>
-                <div className="flex justify-between py-xs border-b border-outline-variant/40">
-                  <span>Vote Totals:</span>
-                  <span className="text-primary font-bold">PUBLIC</span>
-                </div>
-                <div className="flex justify-between py-xs">
-                  <span>Participation Ratio:</span>
-                  <span className="text-primary font-bold">PUBLIC</span>
-                </div>
-              </div>
+        {/* BENTO FEATURE CARDS */}
+        <section className="py-20 bg-[#151517] border-y border-white/10 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto space-y-12">
+            <div className="text-center max-w-2xl mx-auto space-y-3">
+              <h2 className="font-heading text-3xl font-bold text-[#F5F5F5]">Engineered for Uncompromising Privacy</h2>
+              <p className="text-sm text-[#8E8E93]">Built on Cardano-aligned zero-knowledge technology to eliminate ballot tampering and voter tracking.</p>
             </div>
-          </motion.div>
 
-          {/* Private Data Card */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="border border-outline rounded-xl p-lg flex flex-col justify-between relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-primary/5 opacity-50 blur-xl pointer-events-none"></div>
-            <div className="relative">
-              <div className="flex items-center justify-between mb-md">
-                <span className="font-label-caps text-xs font-semibold text-primary bg-primary/10 px-sm py-xs rounded">Encrypted State</span>
-                <span className="material-symbols-outlined text-primary">visibility_off</span>
-              </div>
-              <h3 className="font-headline-md text-lg font-bold text-primary mb-sm">Private Information</h3>
-              <p className="text-on-surface-variant text-sm leading-relaxed mb-lg">
-                Decoupled variables hidden behind local ZK-witness generation. Identity keys never leave your machine.
-              </p>
-              <div className="space-y-sm font-mono-technical text-xs border-t border-outline-variant pt-md">
-                <div className="flex justify-between items-center py-xs border-b border-outline-variant/40">
-                  <span>Voter Identity:</span>
-                  <span className="text-primary flex items-center gap-xs font-bold">
-                    <span className="material-symbols-outlined text-xs">lock</span> SECURE
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-xs border-b border-outline-variant/40">
-                  <span>Ballot Priority Selection:</span>
-                  <span className="text-primary flex items-center gap-xs font-bold">
-                    <span className="material-symbols-outlined text-xs">lock</span> SECURE
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-xs">
-                  <span>Wallet Address Linkage:</span>
-                  <span className="text-primary flex items-center gap-xs font-bold">
-                    <span className="material-symbols-outlined text-xs">lock</span> SECURE
-                  </span>
-                </div>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {features.map((f, idx) => {
+                const Icon = f.icon;
+                return (
+                  <div key={idx} className="bento-card p-6 space-y-4">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#F5F5F5]">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-heading font-bold text-lg text-[#F5F5F5]">{f.title}</h3>
+                    <p className="text-xs text-[#8E8E93] leading-relaxed">{f.description}</p>
+                  </div>
+                );
+              })}
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer Section */}
-      <footer className="w-full py-xl bg-surface border-t border-outline mt-auto transition-colors duration-300">
-        <div className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between items-start md:items-center gap-xl w-full">
-          <div>
-            <div className="flex items-center gap-base text-primary mb-xs">
-              <span className="material-symbols-outlined text-xl">account_balance</span>
-              <span className="font-label-caps text-sm font-bold tracking-tight">VoteVault</span>
-            </div>
-            <p className="text-xs text-on-surface-variant font-mono-technical mt-1">© 2024 VoteVault. Secure consensus.</p>
           </div>
-          
-          <div className="flex flex-wrap gap-lg text-sm text-on-surface-variant">
-            <a className="hover:text-primary transition-colors no-underline" href="#">GitHub</a>
-            <a className="hover:text-primary transition-colors no-underline" href="#">Documentation</a>
-            <a className="hover:text-primary transition-colors no-underline" href="#">Privacy Policy</a>
-            <a className="hover:text-primary transition-colors no-underline" href="#">Terms</a>
-            <a className="hover:text-primary transition-colors no-underline" href="#">Security Audit</a>
+        </section>
+
+        {/* INTERACTIVE PRIVACY MODEL SECTION */}
+        <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <h2 className="font-heading text-3xl font-bold text-[#F5F5F5]">Dual-State Cryptographic Separation</h2>
+            <p className="text-sm text-[#8E8E93]">Explore how Midnight decouples public ledger state from local private witness data.</p>
           </div>
 
-          <div className="flex gap-sm">
-            <a className="w-9 h-9 rounded-full border border-outline flex items-center justify-center hover:border-primary text-primary transition-all" href="#" aria-label="Github Link">
-              <span className="material-symbols-outlined text-base">hub</span>
-            </a>
-            <a className="w-9 h-9 rounded-full border border-outline flex items-center justify-center hover:border-primary text-primary transition-all" href="#" aria-label="Terminal docs">
-              <span className="material-symbols-outlined text-base">code</span>
-            </a>
-          </div>
-        </div>
-      </footer>
+          <PrivacyDiagram />
+        </section>
 
+        {/* ROADMAP TIMELINE */}
+        <section className="py-20 bg-[#151517] border-y border-white/10 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto space-y-12">
+            <div className="text-center max-w-2xl mx-auto space-y-3">
+              <h2 className="font-heading text-3xl font-bold text-[#F5F5F5]">Technical Development Roadmap</h2>
+              <p className="text-sm text-[#8E8E93]">From Compact smart contract specifications to institutional enterprise voting suites.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {roadmap.map((r, idx) => (
+                <div key={idx} className="p-6 rounded-2xl bg-[#1E1E21] border border-white/10 space-y-3 relative">
+                  <span className="text-[11px] font-mono text-[#6FCF97] font-semibold">{r.phase}</span>
+                  <h4 className="font-heading font-bold text-base text-[#F5F5F5]">{r.title}</h4>
+                  <p className="text-xs text-[#8E8E93] leading-relaxed">{r.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* TESTIMONIALS */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <h2 className="font-heading text-3xl font-bold text-[#F5F5F5]">Trusted by Web3 Leaders</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {testimonials.map((t, idx) => (
+              <div key={idx} className="p-8 rounded-2xl bg-[#1E1E21] border border-white/10 space-y-4">
+                <p className="text-sm text-[#C9C9C9] italic leading-relaxed">"{t.quote}"</p>
+                <div>
+                  <div className="font-heading font-bold text-sm text-[#F5F5F5]">{t.author}</div>
+                  <div className="text-xs font-mono text-[#8E8E93]">{t.role}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FAQ ACCORDION */}
+        <section className="py-20 bg-[#151517] border-t border-white/10 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="text-center space-y-3">
+              <h2 className="font-heading text-3xl font-bold text-[#F5F5F5]">Frequently Asked Questions</h2>
+            </div>
+
+            <div className="space-y-4">
+              {faqs.map((faq, idx) => (
+                <div key={idx} className="rounded-xl bg-[#1E1E21] border border-white/10 overflow-hidden">
+                  <button
+                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                    className="w-full flex items-center justify-between p-5 text-left font-heading font-semibold text-sm text-[#F5F5F5]"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown className={`w-4 h-4 text-[#8E8E93] transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
+                  </button>
+                  {openFaq === idx && (
+                    <div className="px-5 pb-5 text-xs text-[#8E8E93] leading-relaxed border-t border-white/5 pt-3">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
     </div>
   );
 };

@@ -1,177 +1,153 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useVoteVault } from '../context/VoteVaultContext';
-import { ThemeToggle } from '../components/ThemeToggle';
+import { Navbar } from '../components/Navbar';
+import { Footer } from '../components/Footer';
+import { WalletType } from '../wallet/WalletTypes';
+import { Shield, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 
 export const ConnectWalletPage: React.FC = () => {
+  const { connectWallet, walletConnected, isConnecting, error } = useVoteVault();
   const navigate = useNavigate();
-  const { walletConnected, isConnecting, error, connectWallet, clearError } = useVoteVault();
-  const [cursorGlowPos, setCursorGlowPos] = useState({ x: -1000, y: -1000 });
 
-  // Redirect to dashboard if already connected
-  useEffect(() => {
+  const handleConnect = async (type: WalletType) => {
+    try {
+      await connectWallet(type);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Wallet connection failed:', err);
+    }
+  };
+
+  React.useEffect(() => {
     if (walletConnected) {
       navigate('/dashboard');
     }
   }, [walletConnected, navigate]);
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setCursorGlowPos({ x: e.clientX, y: e.clientY });
-    };
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  const handleConnect = async (type: 'lace' | 'walletconnect' | 'metamask') => {
-    try {
-      await connectWallet(type);
-    } catch {
-      // Error handled by context
-    }
-  };
-
   return (
-    <div className="flex flex-col min-h-screen bg-background text-on-background relative overflow-hidden font-body-md transition-colors duration-300">
-      
-      {/* Background ambient glow */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full"></div>
-      </div>
+    <div className="min-h-screen bg-[#0B0B0C] text-[#F5F5F5] font-body flex flex-col">
+      <Navbar />
 
-      {/* Mouse cursor glow following div */}
-      <div
-        className="fixed pointer-events-none z-1 rounded-full opacity-40 dark:opacity-100 transition-opacity duration-300"
-        style={{
-          left: `${cursorGlowPos.x}px`,
-          top: `${cursorGlowPos.y}px`,
-          width: '300px',
-          height: '300px',
-          background: 'radial-gradient(circle, var(--glow-color) 0%, rgba(0,0,0,0) 70%)',
-          transform: 'translate(-50%, -50%)',
-        }}
-      ></div>
-
-      {/* Navigation Header */}
-      <header className="fixed top-0 w-full z-50 border-b border-outline bg-background/80 backdrop-blur-md py-4">
-        <div className="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-12 w-full max-w-max-width mx-auto">
-          <Link to="/" className="flex items-center gap-base no-underline text-primary">
-            <span className="material-symbols-outlined text-primary text-xl">account_balance</span>
-            <span className="font-headline-md text-lg font-bold tracking-tight text-primary">VoteVault</span>
-          </Link>
-          <div className="flex items-center gap-sm">
-            <ThemeToggle />
+      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col justify-center space-y-10 w-full">
+        <div className="text-center space-y-3 max-w-md mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto shadow-xl">
+            <Shield className="w-6 h-6 text-[#F5F5F5]" />
           </div>
+          <h1 className="font-heading font-bold text-3xl text-[#F5F5F5]">Connect Your Web3 Wallet</h1>
+          <p className="text-xs text-[#8E8E93] leading-relaxed">
+            Select a supported wallet provider to access zero-knowledge governance features on the Midnight Network.
+          </p>
         </div>
-      </header>
 
-      {/* Main Connection Panel */}
-      <main className="flex-grow flex items-center justify-center px-margin-mobile pt-32 pb-xl z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-[480px] glass-card rounded-xl p-lg md:p-xl flex flex-col items-center border border-outline shadow-xl"
-        >
-          <div className="mb-lg text-center">
-            <h2 className="font-headline-xl text-2xl font-bold text-primary mb-xs">Secure Portal</h2>
-            <p className="text-on-surface-variant text-sm">Connect your credentials to access the zero-knowledge environment.</p>
+        {error && (
+          <div className="p-4 rounded-xl bg-[#EB5757]/10 border border-[#EB5757]/30 text-xs text-[#EB5757] flex items-center space-x-2 max-w-md mx-auto">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span>{error}</span>
           </div>
+        )}
 
-          <AnimatePresence>
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="w-full bg-error-container/10 border border-error/20 p-sm rounded mb-md text-center text-sm flex flex-col items-center gap-xs overflow-hidden"
-              >
-                <p className="text-error font-medium text-xs">{error}</p>
-                <button
-                  onClick={clearError}
-                  className="bg-transparent border-0 underline text-[10px] text-on-surface-variant hover:text-primary cursor-pointer"
-                >
-                  Dismiss
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto w-full">
+          {/* Lace Wallet Option (Primary for Midnight) */}
+          <div className="p-5 rounded-2xl bg-[#1E1E21] border border-white/15 hover:border-white/30 transition-all space-y-4 flex flex-col justify-between group">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-heading font-bold text-base text-[#F5F5F5]">Lace Wallet</span>
+                <span className="px-2 py-0.5 rounded-full bg-[#6FCF97]/10 text-[#6FCF97] font-mono text-[10px]">
+                  Official Midnight
+                </span>
+              </div>
+              <p className="text-xs text-[#8E8E93]">
+                Official Cardano & Midnight Network native wallet extension with integrated WASM zero-knowledge prover.
+              </p>
+            </div>
 
-          <div className="w-full space-y-md mb-lg">
+            {/* Playwright locator requirement: button:has-text("Connect Lace Wallet") */}
             <button
               onClick={() => handleConnect('lace')}
               disabled={isConnecting}
-              className="w-full group bg-primary text-on-primary py-md px-lg rounded flex items-center justify-between hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 cursor-pointer disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-[#F5F5F5] text-[#0B0B0C] font-bold text-xs hover:bg-[#C9C9C9] transition-all flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50"
             >
-              <div className="flex items-center gap-base">
-                <div className="w-8 h-8 rounded-full bg-on-primary/15 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-on-primary text-[18px]">
-                    {isConnecting ? 'hourglass_empty' : 'account_balance_wallet'}
-                  </span>
-                </div>
-                <span className="font-headline-md text-sm font-semibold">
-                  {isConnecting ? 'Connecting Lace...' : 'Connect Lace Wallet'}
+              {isConnecting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <span>Connect Lace Wallet</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* WalletConnect Option */}
+          <div className="p-5 rounded-2xl bg-[#1E1E21] border border-white/10 hover:border-white/20 transition-all space-y-4 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-heading font-bold text-base text-[#F5F5F5]">WalletConnect 2.0</span>
+                <span className="px-2 py-0.5 rounded-full bg-white/10 text-[#C9C9C9] font-mono text-[10px]">
+                  Mobile Bridge
                 </span>
               </div>
-              <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform text-[18px]">arrow_forward</span>
+              <p className="text-xs text-[#8E8E93]">
+                Connect using mobile wallet QR codes or multi-chain protocol bridge adapters.
+              </p>
+            </div>
+
+            <button
+              onClick={() => handleConnect('walletconnect')}
+              className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-[#F5F5F5] font-semibold text-xs transition-colors flex items-center justify-center space-x-2"
+            >
+              <span>Connect WalletConnect</span>
             </button>
-
-            <div className="flex items-center gap-base px-xs">
-              <div className="h-[1px] flex-grow bg-outline"></div>
-              <span className="font-label-caps text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Alternative Links</span>
-              <div className="h-[1px] flex-grow bg-outline"></div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-sm">
-              <button
-                onClick={() => handleConnect('walletconnect')}
-                disabled={isConnecting}
-                className="flex items-center justify-center gap-xs py-md px-sm border border-outline rounded hover:bg-surface-container-high transition-colors hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-primary"
-              >
-                <span className="material-symbols-outlined text-on-surface-variant text-[18px]">link</span>
-                <span className="font-label-caps text-xs font-semibold">WalletConnect</span>
-              </button>
-              <button
-                onClick={() => handleConnect('metamask')}
-                disabled={isConnecting}
-                className="flex items-center justify-center gap-xs py-md px-sm border border-outline rounded hover:bg-surface-container-high transition-colors hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-primary"
-              >
-                <span className="material-symbols-outlined text-on-surface-variant text-[18px]">token</span>
-                <span className="font-label-caps text-xs font-semibold">MetaMask</span>
-              </button>
-            </div>
           </div>
 
-          <div className="w-full space-y-md border-t border-outline pt-lg">
-            <div className="flex flex-wrap justify-center gap-xs">
-              <div className="flex items-center gap-xs px-sm py-xs bg-surface border border-outline rounded-full">
-                <span className="material-symbols-outlined text-[13px] text-primary">verified_user</span>
-                <span className="font-mono-technical text-[9px] uppercase tracking-wider text-on-surface-variant">ZK-Shield Active</span>
+          {/* MetaMask / EVM Injected Option */}
+          <div className="p-5 rounded-2xl bg-[#1E1E21] border border-white/10 hover:border-white/20 transition-all space-y-4 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-heading font-bold text-base text-[#F5F5F5]">MetaMask / Injected</span>
+                <span className="px-2 py-0.5 rounded-full bg-white/10 text-[#C9C9C9] font-mono text-[10px]">
+                  Browser
+                </span>
               </div>
-              <div className="flex items-center gap-xs px-sm py-xs bg-surface border border-outline rounded-full">
-                <span className="material-symbols-outlined text-[13px] text-primary">gavel</span>
-                <span className="font-mono-technical text-[9px] uppercase tracking-wider text-on-surface-variant">Ledger Verifiable</span>
-              </div>
+              <p className="text-xs text-[#8E8E93]">
+                Connect using standard Web3 browser extensions (`window.ethereum`).
+              </p>
             </div>
-            <p className="font-mono-technical text-center text-[9px] text-on-surface-variant/40">
-              ENCRYPTION: AES-256-GCM | SESSION: ISOLATED | ID: 89FB-X12
-            </p>
-          </div>
-        </motion.div>
-      </main>
 
-      {/* Footer */}
-      <footer className="w-full py-lg border-t border-outline bg-surface transition-colors duration-300 z-10">
-        <div className="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-md">
-          <p className="font-mono-technical text-[10px] text-on-surface-variant">© 2024 VoteVault. Secure consensus.</p>
-          <div className="flex gap-lg text-[10px] font-mono-technical">
-            <a className="text-on-surface-variant hover:text-primary underline no-underline transition-colors" href="#">Privacy Policy</a>
-            <a className="text-on-surface-variant hover:text-primary underline no-underline transition-colors" href="#">Terms</a>
-            <a className="text-on-surface-variant hover:text-primary underline no-underline transition-colors" href="#">Security Audit</a>
+            <button
+              onClick={() => handleConnect('metamask')}
+              className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-[#F5F5F5] font-semibold text-xs transition-colors flex items-center justify-center space-x-2"
+            >
+              <span>Connect MetaMask</span>
+            </button>
+          </div>
+
+          {/* Local Developer Simulation Wallet Option */}
+          <div className="p-5 rounded-2xl bg-[#1E1E21] border border-white/10 hover:border-white/20 transition-all space-y-4 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-heading font-bold text-base text-[#F5F5F5]">Local Enclave Simulator</span>
+                <span className="px-2 py-0.5 rounded-full bg-[#F2C94C]/10 text-[#F2C94C] font-mono text-[10px]">
+                  Dev Mode
+                </span>
+              </div>
+              <p className="text-xs text-[#8E8E93]">
+                Client-side zero-knowledge witness simulator enclave for rapid testing.
+              </p>
+            </div>
+
+            <button
+              onClick={() => handleConnect('simulated')}
+              className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-[#F5F5F5] font-semibold text-xs transition-colors flex items-center justify-center space-x-2"
+            >
+              <span>Launch Simulator Wallet</span>
+            </button>
           </div>
         </div>
-      </footer>
+      </main>
+
+      <Footer />
     </div>
   );
 };
