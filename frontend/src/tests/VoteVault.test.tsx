@@ -36,7 +36,7 @@ const TestConsumer: React.FC = () => {
       <button data-testid="disconnect-btn" onClick={disconnectWallet}>
         Disconnect
       </button>
-      <button data-testid="vote-btn" onClick={() => castVote('VV-2024-NB-01', 0)}>
+      <button data-testid="vote-btn" onClick={async () => { await castVote('VV-2024-NB-01', 0); }}>
         Vote Option A
       </button>
       <button data-testid="create-btn" onClick={() => createElection('Protocol Proposal Alpha', 'Testing proposal deployment', ['Option Yes', 'Option No'])}>
@@ -99,6 +99,7 @@ describe('VoteVault Platform Core Flows', () => {
     // Cast vote for candidate index 0
     await act(async () => {
       fireEvent.click(screen.getByTestId('vote-btn'));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     });
 
     const finalVotes = Number(screen.getByTestId('active-votes-a').textContent);
