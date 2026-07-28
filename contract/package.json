@@ -1,9 +1,9 @@
 {
   "name": "votevault-contract",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "index.js",
   "type": "module",
-  "types": "dist/index.d.ts",
+  "types": "index.d.ts",
   "scripts": {
     "compile": "node compile.js",
     "deploy": "node deploy.js"

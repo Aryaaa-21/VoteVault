@@ -3,10 +3,10 @@ node_modules/
 **/node_modules/
 
 # Production builds
-dist/
-**/dist/
+frontend/dist/
 dist-ssr/
 **/dist-ssr/
+!contract/dist/
 
 # Environment files
 .env
