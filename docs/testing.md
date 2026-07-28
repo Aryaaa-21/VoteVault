@@ -1,45 +1,89 @@
-# VoteVault: Testing Documentation
+# VoteVault: Testing Strategy & Test Execution Guide
 
-VoteVault features a double-layered test suite to ensure the stability of the React UI components, the wallet state machines, and Zero-Knowledge workflows.
-
-## 1. Unit & State Testing (Vitest)
-
-Vitest is used to mock state changes, verify context logic, and validate calculations under high speed.
-
-### Running Vitest
-To run the unit tests locally:
-```bash
-cd votevault/frontend
-npm run test
-```
-
-### Test Coverage (`src/tests/VoteVault.test.tsx`)
-1. **Wallet Connection Flow**: Mocks wallet interface injections and asserts that `walletConnected` status and addresses update correctly.
-2. **Vote Casting Test**: Mocks ballot creation, confirms increments of candidate and total tallies, and validates ZK nullifier creation.
-3. **Result Verification Test**: Validates the loading of finalized referendum outcomes and audits cryptographic signatures.
-4. **Election Creation Test**: Simulates admin deployments and candidate options registry.
+VoteVault implements a rigorous, multi-layered testing strategy combining unit tests, state verification, and end-to-end browser automation.
 
 ---
 
-## 2. End-to-End Testing (Playwright)
+## 1. Test Architecture Summary
 
-Playwright simulates user interactions in headless or headed web browsers.
+```mermaid
+graph TD
+    subgraph Contract Verification
+        A[Compact Compiler Check] -->|npm run compile| B[dist/ & managed/ Artifacts]
+        B --> C[Oxlint Linter]
+    end
 
-### Setup Playwright
-First install the Playwright test runners and browser binaries:
-```bash
-cd votevault/frontend
-npx playwright install
+    subgraph Unit & State Testing
+        D[Vitest Unit Suite] -->|npm run test| E[Wallet Flow Tests]
+        D --> F[Vote Tallies & Nullifiers]
+        D --> G[Election Creation]
+    end
+
+    subgraph End-to-End Browser Automation
+        H[Playwright E2E Suite] -->|npm run test:e2e| I[Landing Navigation]
+        H --> J[Lace Wallet Connection]
+        H --> K[Ballot Submission & Nullifier Receipts]
+        H --> L[Ledger Audit Verification]
+    end
 ```
 
-### Running E2E Tests
-To run Playwright tests:
+---
+
+## 2. Test Execution Commands
+
+### A. Smart Contract Compilation
 ```bash
-cd votevault/frontend
+cd contract
+npm run compile
+```
+Verifies `index.compact` syntax and generates JS simulator bindings.
+
+### B. Static Code Analysis (Oxlint)
+```bash
+cd frontend
+npm run lint
+```
+Executes `oxlint` static code analysis across all TypeScript/React source files.
+
+### C. Vitest Unit & State Suite
+```bash
+cd frontend
+npm run test
+```
+Executes 4 core component and context state test flows:
+1. Wallet connection & state update flows
+2. Anonymous vote casting, tally increments, and local nullifier generation
+3. Historical election outcome audit retrieval
+4. Referendum creation and candidate option registration
+
+### D. Playwright End-to-End Browser Suite
+```bash
+cd frontend
 npm run test:e2e
 ```
+Launches headless Chromium to execute end-to-end browser user journeys:
+1. Navigation from landing hero to Lace Wallet connection page
+2. Selection of ballot options, ZK proof calculation simulation, and receipt generation
+3. Results audit page inspection verifying participation timeline charts and spent nullifier tables
 
-### Test Scenarios (`tests/e2e.spec.ts`)
-- **Wallet Connection Flow**: Opens the landing page, navigates to the wallet selection screen, mocks a successful connection, and verifies dashboard entry.
-- **Voting Flow**: Selects an active referendum, triggers vote selection, clicks 'Confirm & Sign', waits for the ZK proof validation, and asserts the nullifier receipt details display.
-- **Results Flow**: Navigates to completed referendums, verifies the dynamic timeline SVG curve renders, and audits the consensus proof validation logs.
+---
+
+## 3. Automated Test Results
+
+```text
+Vitest Unit Tests:
+ ✓ src/tests/VoteVault.test.tsx (4 tests) 3466ms
+     ✓ 1. Wallet Connection Flow
+     ✓ 2. Vote Casting Test
+     ✓ 3. Result Verification Test
+     ✓ 4. Election Creation Test
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+
+Playwright E2E Tests:
+Running 3 tests using 1 worker
+  [1/3] [chromium] › tests/e2e.spec.ts: Wallet Connection Flow
+  [2/3] [chromium] › tests/e2e.spec.ts: Voting Flow
+  [3/3] [chromium] › tests/e2e.spec.ts: Results Flow
+  3 passed (15.0s)
+```

@@ -1,25 +1,40 @@
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import { VoteVaultProvider } from './context/VoteVaultContext';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
-import { LandingPage } from './pages/LandingPage';
-import { ConnectWalletPage } from './pages/ConnectWalletPage';
-import { VoterDashboard } from './pages/VoterDashboard';
-import { ElectionPage } from './pages/ElectionPage';
-import { ResultsPage } from './pages/ResultsPage';
-import { AdminConsole } from './pages/AdminConsole';
+import { VoteVaultProvider } from './context/VoteVaultContext';
+import { ToastContainer } from './components/ToastContainer';
+import { CommandPalette } from './components/CommandPalette';
 
-function App() {
+import { LandingPage } from './pages/LandingPage';
+import { VoterDashboard } from './pages/VoterDashboard';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { ResultsPage } from './pages/ResultsPage';
+import { ConnectWalletPage } from './pages/ConnectWalletPage';
+import { AdminConsole } from './pages/AdminConsole';
+import { DeveloperPage } from './pages/DeveloperPage';
+import { DocsPage } from './pages/DocsPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { ElectionPage } from './pages/ElectionPage';
+
+export function App() {
   return (
     <ThemeProvider>
       <VoteVaultProvider>
         <Router>
+          <CommandPalette />
+          <ToastContainer />
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/connect" element={<ConnectWalletPage />} />
             <Route path="/dashboard" element={<VoterDashboard />} />
-            <Route path="/election/:id" element={<ElectionPage />} />
-            <Route path="/results/:id" element={<ResultsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/results" element={<ResultsPage />} />
+            <Route path="/connect" element={<ConnectWalletPage />} />
             <Route path="/admin" element={<AdminConsole />} />
+            <Route path="/developer" element={<DeveloperPage />} />
+            <Route path="/docs" element={<DocsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/election/:id" element={<ElectionPage />} />
+            {/* Catch-all fallback */}
+            <Route path="*" element={<LandingPage />} />
           </Routes>
         </Router>
       </VoteVaultProvider>

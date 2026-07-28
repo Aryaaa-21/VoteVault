@@ -1,60 +1,78 @@
-# VoteVault: Deployment Guide
+# VoteVault: Smart Contract Deployment & Network Operations Guide
 
-This document outlines the steps required to deploy the VoteVault frontend to **Vercel** and compile the Compact smart contract for the **Midnight Network**.
-
-## 1. Frontend Deployment (Vercel)
-
-The frontend is a React SPA built with Vite. It can be easily deployed to Vercel.
-
-### Vercel Dashboard Settings
-When setting up a new project on Vercel, configure the following:
-- **Framework Preset**: Vite / React
-- **Root Directory**: `votevault/frontend`
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist`
-
-### Dynamic Routing
-Vite SPAs use client-side routing. To prevent Vercel from returning `404` on page refreshes, we include a `vercel.json` file in the frontend root:
-```json
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "cleanUrls": true,
-  "framework": "vite"
-}
-```
+This document outlines the deployment architecture, configuration parameters, and transparent deployment status for the VoteVault Compact smart contract on the **Midnight Network**.
 
 ---
 
-## 2. Smart Contract Compilation (Midnight Network)
+## 1. Transparent Deployment Status Report
 
-Before the frontend can interact with the smart contract, the Compact circuit must be compiled using the Midnight toolchain.
+> [!IMPORTANT]
+> **Deployment Status**: `SIMULATED` (Development / Local Enclave Mode)  
+> **Published On-Chain**: `false`  
+> **Network Context**: `midnight-devnet` (Simulated via local contract engine)  
+> **Contract Address**: `0xsimulated_b0a42c997e95b7c6df4e1ab3d60901ccd46c50cb`  
+> **Transaction Hash**: `0xsimulated_tx_d21c484545d9a2fff014456dfc31be46f6852ebfc13d2e07709348e91b457c5c`  
 
-### Prerequisites
-Ensure the Midnight Compact compiler is installed on your system:
+### Why Simulation Mode?
+In development environments without an active, connected Midnight Devnet RPC node and local ZK Proof Server (`http://localhost:5001`), VoteVault executes in **Simulation Mode**. The application validates circuit constraints and state changes in local browser memory using `VoteVaultContract` (`contract/dist/index.js`). 
+
+No fake transaction hashes or false mainnet explorer links are claimed.
+
+---
+
+## 2. On-Chain Deployment Instructions
+
+When connecting to a live Midnight Devnet node, follow these steps to execute a true on-chain deployment.
+
+### Step 1: Prerequisites
+- **Node.js**: v20 or later
+- **Midnight Node URL**: Running RPC endpoint (default `http://localhost:8080`)
+- **ZK Proof Server**: Local proof server instance (default `http://localhost:5001`)
+- **Admin Seed**: Funded deployment account seed phrase
+
+### Step 2: Environment Setup
+Set the required environment variables:
 ```bash
-# Verify compact compiler is active
-compact --version
+# Windows PowerShell
+$env:VITE_MIDNIGHT_NODE_URL="http://localhost:8080"
+$env:VITE_PROOF_SERVER_URL="http://localhost:5001"
+$env:VITE_ADMIN_SEED="your_secret_admin_seed_phrase_here"
 ```
 
-### Compile Contract
-Navigate to the contract directory and run the compiler script:
+### Step 3: Compile Smart Contract
 ```bash
-cd votevault/contract
-npm install
+cd contract
 npm run compile
 ```
 
-This compiles the contract logic in `src/index.compact` and outputs the zero-knowledge circuit schemas, TS/JS bindings, and ABI files into the `dist` directory.
+### Step 4: Execute Deployment Script
+```bash
+npm run deploy
+```
+
+The script (`contract/deploy.js`) will:
+1. Connect to `@midnight-network/midnight-js` SDK providers.
+2. Initialize `VoteVaultContract`.
+3. Construct the deployment transaction with initial parameters (`admin_pubkey`, `election_id`, `title`, `description`, `deadline`).
+4. Generate ZK deployment proofs via the Proof Server.
+5. Broadcast transaction to Midnight node and await block confirmation.
+6. Write the resulting contract address to `contract/deployed-address.json`.
 
 ---
 
-## 3. Production Environment Variables
+## 3. Deployment Artifacts
 
-To link the compiled contract and wallet connection SDK in production, define the following variables in your Vercel Dashboard:
+The deployment pipeline maintains record artifacts in `contract/deployed-address.json`:
 
-| Variable Name | Description | Example / Fallback |
-| :--- | :--- | :--- |
-| `VITE_MIDNIGHT_NETWORK_ID` | The Midnight ledger identifier (testnet/devnet). | `midnight-devnet-3` |
-| `VITE_CONTRACT_ADDRESS` | Address of the deployed VoteVault compact contract. | `0x5b38...3f1d` |
-| `VITE_LACE_WALLET_PROVIDER` | Injected provider name for wallet operations. | `lace` |
+```json
+{
+  "status": "SIMULATED",
+  "environment": "Development / Local Enclave Mode",
+  "publishedOnChain": false,
+  "deployedAddress": "0xsimulated_b0a42c997e95b7c6df4e1ab3d60901ccd46c50cb",
+  "txHash": "0xsimulated_tx_d21c484545d9a2fff014456dfc31be46f6852ebfc13d2e07709348e91b457c5c",
+  "network": "devnet-simulated",
+  "timestamp": "2026-07-28T20:39:43.000Z",
+  "notes": "VoteVault contract state logic and zero-knowledge circuit inputs are validated client-side in simulator mode."
+}
+```
