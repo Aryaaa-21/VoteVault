@@ -1,0 +1,7 @@
+node_modules
+.git
+.github
+frontend/node_modules
+frontend/playwright-report
+frontend/test-results
+contract/node_modules

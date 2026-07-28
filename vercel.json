@@ -1,19 +1,12 @@
 {
-  "version": 2,
-  "cleanUrls": true,
-  "builds": [
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm --prefix frontend run build",
+  "outputDirectory": "frontend/dist",
+  "framework": "vite",
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "frontend/dist"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
