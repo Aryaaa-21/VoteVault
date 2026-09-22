@@ -180,4 +180,8 @@ const circuitMock = {
 };
 fs.writeFileSync(path.join(managedDir, 'circuits.json'), JSON.stringify(circuitMock, null, 2));
 
-console.log("Compact compilation simulated successfully. Output generated in dist/ and managed/");
+// Also write to root contract/ so the npm package resolution works correctly
+fs.writeFileSync(path.join(__dirname, 'index.d.ts'), dtsContent);
+fs.writeFileSync(path.join(__dirname, 'index.js'), jsContent);
+
+console.log("Compact compilation simulated successfully. Output generated in dist/, managed/, and root contract/");

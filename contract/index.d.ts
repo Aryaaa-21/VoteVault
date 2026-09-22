@@ -10,15 +10,16 @@ export interface ContractState {
   total_votes: bigint;
   nullifiers: Map<string, boolean>;
   admin_pubkey: string;
+  eligibility_merkle_root: string;
 }
 
 export declare class VoteVaultContract {
   state: ContractState;
   constructor(initialState?: Partial<ContractState>);
-  initialize(admin: string, id: string, title: string, description: string, deadline?: bigint): void;
+  initialize(admin: string, id: string, title: string, description: string, deadline?: bigint, merkle_root?: string): void;
   register_candidate(admin_sig: string, index: bigint, name: string): void;
   open_election(admin_sig: string): void;
   close_election(admin_sig: string): void;
   finalize_election(admin_sig: string): void;
-  cast_vote(nullifier: string, candidate_index: bigint): void;
+  cast_vote(nullifier: string, candidate_index: bigint, votes: bigint, merkle_proof: string[]): void;
 }
