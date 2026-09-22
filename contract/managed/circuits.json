@@ -6,7 +6,8 @@
         "id",
         "title",
         "description",
-        "deadline"
+        "deadline",
+        "merkle_root"
       ],
       "privateWitnessInputs": []
     },
@@ -27,7 +28,9 @@
     "cast_vote": {
       "publicInputs": [
         "nullifier",
-        "candidate_index"
+        "candidate_index",
+        "votes",
+        "merkle_proof"
       ],
       "privateWitnessInputs": [
         "voter_credential_secret",

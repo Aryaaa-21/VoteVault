@@ -36,7 +36,7 @@ const TestConsumer: React.FC = () => {
       <button data-testid="disconnect-btn" onClick={disconnectWallet}>
         Disconnect
       </button>
-      <button data-testid="vote-btn" onClick={async () => { await castVote('VV-2024-NB-01', 0); }}>
+      <button data-testid="vote-btn" onClick={async () => { await castVote('VV-2024-NB-01', 0, 3); }}>
         Vote Option A
       </button>
       <button data-testid="create-btn" onClick={() => createElection('Protocol Proposal Alpha', 'Testing proposal deployment', ['Option Yes', 'Option No'])}>
@@ -106,9 +106,9 @@ describe('VoteVault Platform Core Flows', () => {
     const finalTotal = Number(screen.getByTestId('active-total-votes').textContent);
     const userVote = screen.getByTestId('active-user-vote').textContent;
 
-    expect(finalVotes).toBe(initialVotes + 1);
-    expect(finalTotal).toBe(initialTotal + 1);
-    expect(userVote).toBe('Option A: Green Infrastructure');
+    expect(finalVotes).toBe(initialVotes + 3);
+    expect(finalTotal).toBe(initialTotal + 3);
+    expect(userVote).toBe('Option A: Green Infrastructure (3 votes)');
   });
 
   it('3. Result Verification Test - should retrieve historical outcomes and verification audit hashes from state store', () => {
@@ -141,6 +141,20 @@ describe('VoteVault Platform Core Flows', () => {
 
     const finalCount = Number(screen.getByTestId('election-count').textContent);
     expect(finalCount).toBe(initialCount + 1);
+  });
+
+  it('5. Merkle Tree Generation - ProofLayer should generate root and proofs properly', async () => {
+    const { ProofLayer } = await import('../midnight/ProofLayer');
+    const pl = new ProofLayer();
+    const allowlist = ['0x123', '0x456'];
+    const root = await pl.generateMerkleRoot(allowlist);
+    expect(root).toBeDefined();
+    expect(root.startsWith('0x')).toBe(true);
+
+    const proof = await pl.generateMerkleProof('0x123', allowlist);
+    expect(proof).toHaveLength(2);
+
+    await expect(pl.generateMerkleProof('0x999', allowlist)).rejects.toThrow('Wallet address is not on the eligibility allowlist.');
   });
 
 });

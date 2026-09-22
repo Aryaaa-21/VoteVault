@@ -5,11 +5,14 @@ import { Footer } from '../components/Footer';
 import { ShieldCheck, CheckCircle2, FileJson } from 'lucide-react';
 
 export const ResultsPage: React.FC = () => {
-  const { elections } = useVoteVault();
+  const { elections, addToast } = useVoteVault();
   const pastElection = elections.find((e) => e.id === 'PV-2023-10') || elections[0];
 
   const [selectedElectionId, setSelectedElectionId] = useState(pastElection.id);
   const currentElection = elections.find((e) => e.id === selectedElectionId) || pastElection;
+
+  const [searchNullifier, setSearchNullifier] = useState('');
+  const [searchResult, setSearchResult] = useState<'IDLE' | 'VERIFIED' | 'NOT_FOUND'>('IDLE');
 
   const mockTimelineData = [
     { hour: '00:00', votes: 1200 },
@@ -26,8 +29,33 @@ export const ResultsPage: React.FC = () => {
     { nullifier: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b', block: 1849202, status: 'Verified' }
   ];
 
+  const handleVerify = () => {
+    if (!searchNullifier) return;
+    const found = mockSpentNullifiers.find(n => n.nullifier === searchNullifier);
+    const isUserNullifier = currentElection.votedNullifier === searchNullifier;
+    if (found || isUserNullifier) {
+      setSearchResult('VERIFIED');
+    } else {
+      setSearchResult('NOT_FOUND');
+    }
+  };
+
   const exportJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentElection, null, 2));
+    if (!currentElection.votedNullifier) {
+      addToast("You haven't voted in this election yet.", "warning");
+      return;
+    }
+    const receipt = {
+      referendumId: currentElection.id,
+      nullifierHash: currentElection.votedNullifier,
+      transactionHash: `0xtx_mock_${currentElection.votedNullifier.substring(2, 10)}`,
+      blockHeight: 1849204,
+      circuit: "cast_vote",
+      merkleRoot: currentElection.allowlist ? "0xmock_merkle_root" : "N/A",
+      timestamp: new Date().toISOString(),
+      verificationStatus: "CONFIRMED_ON_CHAIN"
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(receipt, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", `audit-receipt-${currentElection.id}.json`);
@@ -56,6 +84,7 @@ export const ResultsPage: React.FC = () => {
             <select
               value={selectedElectionId}
               onChange={(e) => setSelectedElectionId(e.target.value)}
+              aria-label="Select Referendum"
               className="px-3.5 py-2 rounded-xl bg-[#1E1E21] border border-white/10 text-xs font-mono text-[#F5F5F5] focus:outline-none"
             >
               {elections.map((e) => (
@@ -67,6 +96,7 @@ export const ResultsPage: React.FC = () => {
 
             <button
               onClick={exportJSON}
+              aria-label="Export Audit JSON"
               className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[#F5F5F5] font-semibold text-xs transition-colors flex items-center space-x-2"
             >
               <FileJson className="w-4 h-4 text-[#6FCF97]" />
@@ -128,10 +158,43 @@ export const ResultsPage: React.FC = () => {
 
         {/* Playwright locator requirement: h2:has-text("Ledger Proof Verification") */}
         <div className="p-6 rounded-2xl bg-[#1E1E21] border border-white/10 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-heading font-bold text-xl text-[#F5F5F5]">Ledger Proof Verification</h2>
-            <span className="text-xs font-mono text-[#6FCF97]">On-Chain Nullifier State</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="font-heading font-bold text-xl text-[#F5F5F5]">Ledger Proof Verification</h2>
+              <span className="text-xs font-mono text-[#6FCF97]">On-Chain Nullifier State</span>
+            </div>
+
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
+              <input 
+                type="text" 
+                placeholder="Paste Nullifier Hash (0x...)"
+                value={searchNullifier}
+                onChange={(e) => { setSearchNullifier(e.target.value); setSearchResult('IDLE'); }}
+                aria-label="Search Nullifier"
+                className="px-3.5 py-2 rounded-xl bg-[#0B0B0C] border border-white/10 text-xs font-mono text-[#F5F5F5] focus:outline-none focus:border-[#6FCF97] w-full sm:w-64 transition-colors"
+              />
+              <button 
+                onClick={handleVerify}
+                aria-label="Verify Nullifier"
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[#F5F5F5] font-semibold text-xs transition-colors"
+              >
+                Verify
+              </button>
+            </div>
           </div>
+
+          {searchResult === 'VERIFIED' && (
+            <div className="p-3 rounded-xl bg-[#6FCF97]/10 border border-[#6FCF97]/20 flex items-center space-x-2 text-xs font-mono text-[#6FCF97]">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Verified: Nullifier found in public ledger state tree.</span>
+            </div>
+          )}
+          {searchResult === 'NOT_FOUND' && (
+            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center space-x-2 text-xs font-mono text-red-400">
+              <ShieldCheck className="w-4 h-4" />
+              <span>Not Found: Nullifier not present on the ledger.</span>
+            </div>
+          )}
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">

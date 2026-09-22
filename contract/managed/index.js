@@ -13,14 +13,16 @@ export class VoteVaultContract {
       total_votes: initialState.total_votes || 0n,
       nullifiers: initialState.nullifiers || new Map(),
       admin_pubkey: initialState.admin_pubkey || '',
+      eligibility_merkle_root: initialState.eligibility_merkle_root || '',
     };
   }
 
-  initialize(admin, id, title, description, deadline = 0n) {
+  initialize(admin, id, title, description, deadline = 0n, merkle_root = '') {
     this.state.admin_pubkey = admin;
     this.state.election_id = id;
     this.state.election_title = title;
     this.state.election_description = description;
+    this.state.eligibility_merkle_root = merkle_root;
     this.state.election_deadline = BigInt(deadline);
     this.state.election_active = false;
     this.state.election_finalized = false;
@@ -51,20 +53,31 @@ export class VoteVaultContract {
     this.state.election_finalized = true;
   }
 
-  cast_vote(nullifier, candidate_index) {
+  cast_vote(nullifier, candidate_index, votes, merkle_proof) {
     if (!this.state.election_active) {
       throw new Error("Election is not active");
     }
     if (this.state.election_finalized) {
       throw new Error("Election is finalized");
     }
+    
+    // Simulate Merkle Root validation
+    // In our mock, if a root is set, proof array must be provided.
+    if (this.state.eligibility_merkle_root && (!merkle_proof || merkle_proof.length === 0)) {
+       throw new Error("Merkle proof verification failed");
+    }
+
+    const v = BigInt(votes);
+    if (v <= 0n) throw new Error("Must cast at least 1 vote");
+    if (v * v > 100n) throw new Error("Quadratic voting budget exceeded (Max 100 credits)");
+
     const idx = BigInt(candidate_index);
     if (this.state.nullifiers.get(nullifier)) {
       throw new Error("Double voting detected: Nullifier already spent");
     }
     this.state.nullifiers.set(nullifier, true);
     const currentVotes = this.state.candidate_votes.get(idx) || 0n;
-    this.state.candidate_votes.set(idx, currentVotes + 1n);
-    this.state.total_votes = this.state.total_votes + 1n;
+    this.state.candidate_votes.set(idx, currentVotes + v);
+    this.state.total_votes = this.state.total_votes + v;
   }
 }

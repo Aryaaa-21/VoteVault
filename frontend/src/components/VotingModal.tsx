@@ -14,6 +14,7 @@ export const VotingModal: React.FC<VotingModalProps> = ({ electionId, candidates
   
   const [step, setStep] = useState<'SELECT' | 'CONFIRM' | 'SUCCESS'>('SELECT');
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [votes, setVotes] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [receipt, setReceipt] = useState<{ nullifier: string; txHash: string } | null>(null);
 
@@ -33,7 +34,7 @@ export const VotingModal: React.FC<VotingModalProps> = ({ electionId, candidates
     setIsSubmitting(true);
 
     try {
-      const res = await castVote(electionId, selectedIndex);
+      const res = await castVote(electionId, selectedIndex, votes);
       setReceipt(res);
       setStep('SUCCESS');
     } catch (err) {
@@ -70,9 +71,17 @@ export const VotingModal: React.FC<VotingModalProps> = ({ electionId, candidates
         {step === 'SELECT' && (
           <div className="space-y-5">
             <div>
-              <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white/10 text-xs font-mono text-[#F5F5F5] mb-2">
-                <Shield className="w-3.5 h-3.5 text-[#6FCF97]" />
-                <span>Zero-Knowledge Ballot</span>
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white/10 text-xs font-mono text-[#F5F5F5]">
+                  <Shield className="w-3.5 h-3.5 text-[#6FCF97]" />
+                  <span>Zero-Knowledge Ballot</span>
+                </div>
+                {walletConnected && (
+                  <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#6FCF97]/10 text-xs font-mono text-[#6FCF97]">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Merkle Allowlist Verified</span>
+                  </div>
+                )}
               </div>
               <h2 className="font-heading font-bold text-xl text-[#F5F5F5]">Select Ballot Option</h2>
               <p className="text-xs text-[#8E8E93]">Choose a candidate option. Your identity is decoupled via ZK nullifiers.</p>
@@ -125,20 +134,67 @@ export const VotingModal: React.FC<VotingModalProps> = ({ electionId, candidates
               </div>
             </div>
 
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sm font-semibold text-[#F5F5F5]">Allocate Voice Credits</span>
+                <span className="text-xs font-mono text-[#F2C94C]">{100 - (votes * votes)} / 100 Remaining</span>
+              </div>
+              <p className="text-xs text-[#8E8E93] mb-3">Quadratic Voting applies a non-linear cost. Cost = (Votes)². Max 10 votes.</p>
+              
+              <div className="flex items-center space-x-4">
+                <input 
+                  type="range" 
+                  min="1" 
+                  max="10" 
+                  value={votes} 
+                  onChange={(e) => setVotes(parseInt(e.target.value))}
+                  className="flex-1 accent-[#6FCF97]"
+                />
+                <div className="w-16 text-center py-1.5 rounded bg-[#151517] border border-white/10 font-mono text-sm text-[#F5F5F5]">
+                  {votes} {votes === 1 ? 'Vote' : 'Votes'}
+                </div>
+              </div>
+              <div className="flex justify-between text-[10px] text-[#8E8E93] font-mono mt-1">
+                <span>Cost: {votes * votes} VC</span>
+                <span>Max: 100 VC</span>
+              </div>
+            </div>
+
             <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-[11px] text-[#8E8E93] leading-relaxed">
               Your device will compute spent nullifier N = SHA256(Secret || ElectionID || Salt) in private browser memory. Your wallet address is omitted from on-chain state.
             </div>
+
+            {/* Prover Progress Stepper */}
+            {isSubmitting && (
+              <div className="mt-4 p-4 rounded-xl bg-[#151517] border border-white/10 space-y-3">
+                <div className="text-xs font-heading font-medium text-[#F5F5F5] mb-2 flex items-center">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-2 text-[#F2C94C]" />
+                  Zero-Knowledge Proof Generation
+                </div>
+                {[
+                  { icon: '🔐', text: 'Deriving local witness secret & nullifier...' },
+                  { icon: '⚡', text: 'Generating ZK-SNARK proof via Proof Server...' },
+                  { icon: '✍️', text: 'Awaiting Lace Wallet signature...' },
+                  { icon: '🌐', text: 'Broadcasting to Midnight Preprod consensus...' }
+                ].map((s, i) => (
+                  <div key={i} className={`flex items-center space-x-3 text-xs transition-opacity duration-500 ${isSubmitting ? 'opacity-100' : 'opacity-30'}`} style={{ animationDelay: `${i * 0.8}s`, animationFillMode: 'both', animationName: 'fadeIn' }}>
+                    <span className="text-base">{s.icon}</span>
+                    <span className="text-[#8E8E93]">{s.text}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Playwright requirement: button text "Confirm & Sign" */}
             <button
               onClick={handleConfirmAndSign}
               disabled={isSubmitting}
-              className="w-full py-3.5 rounded-xl bg-[#F5F5F5] text-[#0B0B0C] font-bold text-xs hover:bg-[#C9C9C9] transition-all flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50"
+              className="w-full py-3.5 rounded-xl bg-[#F5F5F5] text-[#0B0B0C] font-bold text-xs hover:bg-[#C9C9C9] transition-all flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50 mt-4"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Generating ZK Proof & Submitting...</span>
+                  <span>Processing...</span>
                 </>
               ) : (
                 <span>Confirm & Sign</span>

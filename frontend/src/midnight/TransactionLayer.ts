@@ -18,7 +18,9 @@ export class TransactionLayer {
   public async submitVoteTransaction(
     electionId: string,
     candidateIndex: number,
+    votes: number,
     walletAddress: string,
+    allowlist: string[],
     walletApi?: any
   ): Promise<SubmittedTransaction> {
     console.log(`[TransactionLayer] Constructing transaction for election ${electionId}`);
@@ -27,13 +29,15 @@ export class TransactionLayer {
     const witnessProof: ZKWitnessProof = await this.proofLayer.generateCastVoteProof(
       electionId,
       candidateIndex,
-      walletAddress
+      votes,
+      walletAddress,
+      allowlist
     );
 
     if (walletApi && typeof walletApi.submitTx === 'function') {
       const txHash = await walletApi.submitTx({
         circuit: 'cast_vote',
-        args: [witnessProof.nullifier, BigInt(candidateIndex)]
+        args: [witnessProof.nullifier, BigInt(candidateIndex), BigInt(votes), witnessProof.merkleProof]
       });
       return {
         txHash,

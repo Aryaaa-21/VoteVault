@@ -24,6 +24,7 @@ export interface Election {
   userVote?: string | null;
   outcome?: string;
   votedNullifier?: string | null;
+  allowlist?: string[];
 }
 
 export interface NotificationItem {
@@ -60,7 +61,7 @@ interface VoteVaultContextType {
   setCommandPaletteOpen: (open: boolean) => void;
   connectWallet: (type: WalletType) => Promise<void>;
   disconnectWallet: () => void;
-  castVote: (electionId: string, candidateIndex: number) => Promise<{ nullifier: string; txHash: string }>;
+  castVote: (electionId: string, candidateIndex: number, votes: number) => Promise<{ nullifier: string; txHash: string }>;
   createElection: (title: string, description: string, candidates: string[]) => Promise<void>;
   endElectionEarly: (electionId: string) => Promise<void>;
   publishResults: (electionId: string) => Promise<void>;
@@ -117,7 +118,8 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         { index: 2, name: 'Option C: Education & Research', votes: 68000, icon: 'graduation-cap' }
       ],
       totalVotes: 283000,
-      userVote: null
+      userVote: null,
+      allowlist: ['addr1', 'addr2']
     },
     {
       id: 'VV-102-BD',
@@ -201,7 +203,9 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           'admin-pubkey-0x123',
           elec.id,
           elec.title,
-          elec.description
+          elec.description,
+          0n,
+          'mock_merkle_root'
         );
         elec.candidates.forEach((cand) => {
           contract.register_candidate('admin-sig', BigInt(cand.index), cand.name);
@@ -270,7 +274,7 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     addToast('Wallet disconnected', 'info');
   };
 
-  const castVote = async (electionId: string, candidateIndex: number) => {
+  const castVote = async (electionId: string, candidateIndex: number, votes: number) => {
     setError(null);
     if (!walletConnected || !walletAddress) {
       const err = new Error("Wallet not connected");
@@ -280,36 +284,46 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
 
     try {
+      const elec = elections.find(e => e.id === electionId);
+      const allowlist = elec?.allowlist ? [...elec.allowlist] : [];
+      if (!allowlist.includes(walletAddress)) {
+        allowlist.push(walletAddress); // auto-allowlist for demo
+      }
+
       const txLayer = new TransactionLayer();
       const result = await txLayer.submitVoteTransaction(
         electionId,
         candidateIndex,
+        votes,
         walletAddress,
+        allowlist,
         walletApi
       );
 
       let contract = contractInstances[electionId];
       if (!contract) {
         contract = new VoteVaultContract();
-        contract.initialize('admin-pubkey-0x123', electionId, 'Election', 'Description');
+        contract.initialize('admin-pubkey-0x123', electionId, 'Election', 'Description', 0n, 'mock_merkle_root');
         contractInstances[electionId] = contract;
       }
-      contract.cast_vote(result.nullifier, BigInt(candidateIndex));
+      
+      // Simulate contract call with mock proof
+      contract.cast_vote(result.nullifier, BigInt(candidateIndex), BigInt(votes), ['mock_proof_1']);
 
       setElections((prevElections) =>
         prevElections.map((elec) => {
           if (elec.id === electionId) {
             const updatedCandidates = elec.candidates.map((cand) => {
               if (cand.index === candidateIndex) {
-                return { ...cand, votes: cand.votes + 1 };
+                return { ...cand, votes: cand.votes + votes };
               }
               return cand;
             });
             return {
               ...elec,
               candidates: updatedCandidates,
-              totalVotes: elec.totalVotes + 1,
-              userVote: elec.candidates[candidateIndex].name,
+              totalVotes: elec.totalVotes + votes,
+              userVote: `${elec.candidates[candidateIndex].name} (${votes} votes)`,
               votedNullifier: result.nullifier
             };
           }

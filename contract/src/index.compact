@@ -46,7 +46,7 @@ pragma language_version 0.23;
 export witness get_voter_credential_secret(): Bytes<32>;
 export witness get_nullifier_blinding_secret(): Bytes<32>;
 export witness get_private_vote_choice(): Uint<64>;
-export witness verify_membership_witness(voter_pubkey: Bytes<32>, election_id: Bytes<32>): Boolean;
+export witness verify_membership_witness(voter_secret: Bytes<32>, merkle_proof: Bytes<32>[], root: Bytes<32>): Boolean;
 
 // ----------------------------------------------------------------------------
 // PUBLIC LEDGER STATE DECLARATIONS
@@ -56,6 +56,7 @@ export ledger admin_pubkey: Bytes<32>;
 export ledger election_id: Bytes<32>;
 export ledger election_title: Opaque<"string">;
 export ledger election_description: Opaque<"string">;
+export ledger eligibility_merkle_root: Bytes<32>;
 export ledger election_active: Boolean;
 export ledger election_finalized: Boolean;
 export ledger election_deadline: Uint<64>;
@@ -90,12 +91,14 @@ export circuit initialize(
     id: Bytes<32>,
     title: Opaque<"string">,
     description: Opaque<"string">,
-    deadline: Uint<64>
+    deadline: Uint<64>,
+    merkle_root: Bytes<32>
 ): [] {
     admin_pubkey = admin;
     election_id = id;
     election_title = title;
     election_description = description;
+    eligibility_merkle_root = merkle_root;
     election_deadline = deadline;
     election_active = false;
     election_finalized = false;
@@ -148,28 +151,37 @@ export circuit open_election(admin_sig: Bytes<64>): [] {
  * 1. The election is currently ACTIVE and NOT FINALIZED.
  * 2. The Nullifier Hash has NOT been recorded previously in the nullifiers map.
  * 
- * Public Inputs: nullifier (Bytes<32>), candidate_index (Uint<64>)
+ * Public Inputs: nullifier (Bytes<32>), candidate_index (Uint<64>), votes (Uint<64>), merkle_proof (Bytes<32>[])
  * Private Witness Inputs: voter_secret, credential_secret (verified client-side in ZK)
- * State Updates: nullifiers[nullifier] = true, candidate_votes[candidate_index]++, total_votes++
+ * State Updates: nullifiers[nullifier] = true, candidate_votes[candidate_index] += votes, total_votes += votes
  * Privacy Guarantees: Identity key is NEVER published on-chain. Nullifier is un-linkable to wallet.
  */
 export circuit cast_vote(
     nullifier: Bytes<32>,
-    candidate_index: Uint<64>
+    candidate_index: Uint<64>,
+    votes: Uint<64>,
+    merkle_proof: Bytes<32>[]
 ): [] {
     // 1. Enforce election lifecycle constraints
     assert election_active;
     assert !election_finalized;
     
-    // 2. Double-voting prevention check: Nullifier must be unspent
+    // 2. Enforce Merkle Allowlist Eligibility
+    assert verify_membership_witness(get_voter_credential_secret(), merkle_proof, eligibility_merkle_root);
+
+    // 3. Quadratic Voting Cost Enforcement (Max 100 Voice Credits)
+    assert votes > 0;
+    assert (votes * votes) <= 100;
+    
+    // 4. Double-voting prevention check: Nullifier must be unspent
     assert !nullifiers[nullifier];
     
-    // 3. Mark nullifier as spent on public ledger
+    // 5. Mark nullifier as spent on public ledger
     nullifiers[nullifier] = true;
     
-    // 4. Increment candidate tally and aggregate total
-    candidate_votes[candidate_index] = candidate_votes[candidate_index] + 1;
-    total_votes = total_votes + 1;
+    // 6. Increment candidate tally and aggregate total
+    candidate_votes[candidate_index] = candidate_votes[candidate_index] + votes;
+    total_votes = total_votes + votes;
 }
 
 /**

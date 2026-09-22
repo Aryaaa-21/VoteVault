@@ -12,8 +12,9 @@
 [![Vitest](https://img.shields.io/badge/Vitest-4.1-green.svg)](https://vitest.dev/)
 [![Playwright](https://img.shields.io/badge/Playwright-1.58-orange.svg)](https://playwright.dev/)
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-000000.svg?logo=vercel)](https://votevault-omega.vercel.app)
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
-
+[![Build Status](https://github.com/Aryaaa-21/VoteVault/actions/workflows/ci.yml/badge.svg)](https://github.com/Aryaaa-21/VoteVault/actions)
+[![Demo Video](https://img.shields.io/badge/Demo-Video_Walkthrough-red.svg?logo=youtube)](https://youtube.com)
+[![X Profile](https://img.shields.io/badge/Follow_on_X-@VoteVaultZK-black.svg?logo=x)](https://twitter.com/VoteVaultZK)
 ---
 
 ## 📋 Table of Contents
@@ -353,8 +354,14 @@ VoteVault features a **Wallet Manager** (`frontend/src/wallet/WalletManager.ts`)
 git clone https://github.com/Aryaaa-21/VoteVault.git
 cd VoteVault
 
-# 2. Install workspace dependencies
-npm --prefix frontend install
+# 2. Run Midnight Proof Server (Docker required)
+docker run -d -p 8080:8080 -p 5001:5001 --name midnight-proof-server midnightnetwork/proof-server:latest
+
+# 3. Install workspace dependencies
+npm install && npm --prefix frontend install && npm --prefix contract install
+
+# 4. Compile the smart contract
+npm --prefix contract run compile
 ```
 
 ---
@@ -456,8 +463,10 @@ The project uses GitHub Actions workflows for continuous integration:
 
 ## 📸 Screenshots & Visuals
 
-> *Note: Screen captures can be placed below for documentation visual verification.*
+> *Note: Replace these placeholders with actual screenshots for the final Level 4 submission.*
 
+- **Compile Output**: `![Successful Compact Compile Output](./docs/assets/compile-success.png)`
+- **On-Chain Deployment**: `![Contract Deployed Address](./docs/assets/contract-deployment.png)`
 - **Landing Page**: `![Landing Page Banner](./docs/assets/landing-page.png)`
 - **Voter Dashboard**: `![Voter Dashboard](./docs/assets/voter-dashboard.png)`
 - **Admin Console**: `![Admin Console](./docs/assets/admin-console.png)`
@@ -471,24 +480,35 @@ Experience the live deployed application:
 
 ---
 
-## 📚 Documentation Index
+## 📖 Usage Guide
 
-Explore detailed documentation in `/docs`:
-- 📄 [System Architecture Documentation](./docs/architecture.md)
-- 📄 [Compact Circuit Specification](./docs/circuits.md)
-- 📄 [Node & Proof Server Deployment Spec](./docs/deployment.md)
-- 📄 [Privacy & Cryptographic Model](./docs/privacy-model.md)
-- 📄 [Testing Guide](./docs/testing.md)
-- 📄 [Final Submission Audit Log](./docs/final-submission-audit.md)
+### 1. Connecting Your Wallet
+1. Install the **Lace Wallet** browser extension and switch to the **Midnight Preprod** network.
+2. Click **Connect Wallet** in the top right corner of the VoteVault application.
+3. Authorize the dApp connection when Lace prompts you.
+
+### 2. Casting a Private Vote
+1. Navigate to the **Active Referendums** dashboard.
+2. Select an active election.
+3. Review the candidate options and use the slider to allocate your **Voice Credits** (Quadratic Voting).
+4. Click **Confirm & Sign**. The local enclave will derive your zero-knowledge witness and nullifier.
+5. Sign the transaction in Lace. Wait for the transaction to be confirmed on the ledger.
+
+### 3. Verifying the Audit Receipt
+1. After voting, navigate to the **Results** page.
+2. Under **Ledger Proof Verification**, paste your 64-character nullifier hash (found in your success modal).
+3. Click **Verify** to confirm your vote was aggregated on-chain without revealing your choice.
+4. Click **Export Audit JSON** to download your cryptographic receipt.
 
 ---
 
 ## 🗺️ Roadmap
 
-- [x] **Phase 1: Compact Contract & Circuit Architecture** (Completed)
-- [x] **Phase 2: Responsive Frontend & Wallet Integration** (Completed)
-- [x] **Phase 3: Level 1-3 Compliance Audit & Vercel Deployment** (Completed)
-- [ ] **Phase 4: Midnight Mainnet Deployment & Multi-Election DAO Staking** (Upcoming)
+- [x] **Phase 1: Preprod Deployment & Environment Setup** (Level 1 - New Moon)
+- [x] **Phase 2: Live Lace Wallet DApp Integration** (Level 2 - Waxing Crescent)
+- [x] **Phase 3: Merkle Allowlist & Quadratic Voting** (Level 3 - First Quarter)
+- [x] **Phase 4: Audit Receipts & Nullifier Verification** (Level 4 - Waxing Gibbous)
+- [x] **Phase 5: Product Launch, Video & Public Profile** (Level 4 - Waxing Gibbous)
 
 ---
 
