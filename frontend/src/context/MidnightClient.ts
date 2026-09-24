@@ -172,7 +172,7 @@ export class MidnightClient {
                     await new Promise(resolve => setTimeout(resolve, 1500));
                 }
 
-                const mockContractAddress = `0xcontract_${Array.from({length: 24}, () => Math.floor(Math.random()*16).toString(16)).join('')}`;
+                const mockContractAddress = `0x${Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('')}`;
                 const mockTxHash = `0xdeploytx_${Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join('')}`;
 
                 return {

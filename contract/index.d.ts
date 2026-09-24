@@ -1,3 +1,4 @@
+
 export interface ContractState {
   election_id: string;
   election_title: string;

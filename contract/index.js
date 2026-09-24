@@ -1,3 +1,4 @@
+
 export class VoteVaultContract {
   constructor(initialState = {}) {
     this.state = {
@@ -59,13 +60,14 @@ export class VoteVaultContract {
     if (this.state.election_finalized) {
       throw new Error("Election is finalized");
     }
-
+    
     // Simulate Merkle Root validation
+    // In our mock, if a root is set, proof array must be provided.
     if (this.state.eligibility_merkle_root && (!merkle_proof || merkle_proof.length === 0)) {
-      throw new Error("Merkle proof verification failed");
+       throw new Error("Merkle proof verification failed");
     }
 
-    const v = BigInt(votes || 1);
+    const v = BigInt(votes);
     if (v <= 0n) throw new Error("Must cast at least 1 vote");
     if (v * v > 100n) throw new Error("Quadratic voting budget exceeded (Max 100 credits)");
 

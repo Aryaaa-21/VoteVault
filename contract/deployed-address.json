@@ -1,10 +1,10 @@
 {
   "status": "SIMULATED",
-  "environment": "Development / Local Enclave Mode",
+  "environment": "Development / Local Enclave",
   "publishedOnChain": false,
-  "deployedAddress": "0xsimulated_b0a42c997e95b7c6df4e1ab3d60901ccd46c50cb",
-  "txHash": "0xsimulated_tx_d21c484545d9a2fff014456dfc31be46f6852ebfc13d2e07709348e91b457c5c",
+  "deployedAddress": "0x83d0fafdba2cdff298af6e0b72ebec3b42e79503",
+  "txHash": "0xsimulated_tx_40258b201f5486564fda05cfc35adbe8c8682a4b4d56cc56",
   "network": "devnet-simulated",
-  "timestamp": "2026-07-28T20:39:43.000Z",
-  "notes": "VoteVault contract state logic and zero-knowledge circuit inputs are validated client-side in simulator mode. On-chain mainnet/testnet deployment scripts are provided in contract/deploy.js."
+  "timestamp": "2026-09-24T09:28:59.678Z",
+  "notes": "Contract logic executed via client-side simulator. Set VITE_ADMIN_SEED and launch Midnight devnet node for live testnet deployment."
 }

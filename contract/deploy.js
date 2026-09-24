@@ -50,8 +50,7 @@ async function deploy() {
         // Simulating deployment in development/CI context
         console.log("\nSimulating deployment execution pipeline...");
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const simulatedAddress = '0xsimulated_' + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join('');
+        const simulatedAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('');
         const txHash = '0xsimulated_tx_' + Array.from({length: 48}, () => Math.floor(Math.random()*16).toString(16)).join('');
         
         console.log("\n[Success] Contract instance initialized in Local Simulation Enclave!");
