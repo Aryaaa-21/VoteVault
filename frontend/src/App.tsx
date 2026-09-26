@@ -9,7 +9,7 @@ import { VoterDashboard } from './pages/VoterDashboard';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { ResultsPage } from './pages/ResultsPage';
 import { ConnectWalletPage } from './pages/ConnectWalletPage';
-import { AdminConsole } from './pages/AdminConsole';
+import { AdminPage } from './pages/AdminPage';
 import { DeveloperPage } from './pages/DeveloperPage';
 import { DocsPage } from './pages/DocsPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -28,7 +28,7 @@ export function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/connect" element={<ConnectWalletPage />} />
-            <Route path="/admin" element={<AdminConsole />} />
+            <Route path="/admin" element={<AdminPage />} />
             <Route path="/developer" element={<DeveloperPage />} />
             <Route path="/docs" element={<DocsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
