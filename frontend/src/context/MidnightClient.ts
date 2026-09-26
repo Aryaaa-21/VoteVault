@@ -31,14 +31,14 @@ export class MidnightClient {
         console.log("[MidnightClient] Connecting to Lace Wallet...");
         
         // Check for injected Midnight provider (window.midnight.mnLace)
-        const injectedProvider = (window as any).midnight?.mnLace;
+        const injectedProvider = (window as any).midnight?.mnLace || (window as any).midnight?.['1am'];
         if (!injectedProvider) {
-            throw new Error("Lace Wallet extension is not installed or enabled in this browser.");
+            throw new Error("1AM or Lace Wallet extension is not installed or enabled in this browser.");
         }
 
         try {
             // Enable wallet access
-            const enabledApi = await injectedProvider.enable();
+            const enabledApi = await injectedProvider.enable('preview');
             const state = await enabledApi.state();
             
             if (!state.address) {

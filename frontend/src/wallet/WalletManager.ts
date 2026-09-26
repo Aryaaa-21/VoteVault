@@ -63,14 +63,14 @@ export class WalletManager {
     console.log(`[WalletManager] Connecting to provider: ${type}...`);
 
     try {
-      if (type === 'lace' && typeof window !== 'undefined' && ((window as any).midnight?.mnLace || (window as any).cardano?.lace)) {
-        const injectedProvider = (window as any).midnight?.mnLace || (window as any).cardano?.lace;
-        const api = await injectedProvider.enable();
+      if (type === 'lace' && typeof window !== 'undefined' && ((window as any).midnight?.mnLace || (window as any).cardano?.lace || (window as any).midnight?.['1am'])) {
+        const injectedProvider = (window as any).midnight?.mnLace || (window as any).cardano?.lace || (window as any).midnight?.['1am'];
+        const api = await injectedProvider.enable('preview');
         const state = await api.state();
         
         const session: WalletAccountSession = {
           address: state.address || '0x89FB-X12-LACE-VOTEVAULT',
-          network: state.network || 'midnight-devnet',
+          network: state.network || 'midnight-preview',
           walletType: 'lace',
           connectedAt: new Date().toISOString(),
           api
