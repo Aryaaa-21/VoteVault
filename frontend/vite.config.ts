@@ -11,4 +11,16 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      external: [
+        '@midnight-ntwrk/compact-js',
+        '@midnight-ntwrk/compact-runtime',
+        '@midnight-ntwrk/midnight-js-contracts',
+        '@midnight-ntwrk/midnight-js-network-id',
+        '@midnight-ntwrk/midnight-js-fetch-zk-config-provider',
+        '@midnight-ntwrk/ledger-v8'
+      ]
+    }
+  }
 })
