@@ -1,0 +1,30 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--legacy-peer-deps"
+  # Set a verified address in the hosting dashboard once Studio has deployed it.
+  VITE_PREVIEW_INDEXER_URL = "https://indexer.preview.midnight.network/api/v4/graphql"
+  VITE_PREVIEW_INDEXER_WS = "wss://indexer.preview.midnight.network/api/v4/graphql/ws"
+  VITE_PREPROD_INDEXER_URL = "https://indexer.preprod.midnight.network/api/v4/graphql"
+  VITE_PREPROD_INDEXER_WS = "wss://indexer.preprod.midnight.network/api/v4/graphql/ws"
+
+# Midnight proving assets require cross-origin isolation in the browser.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Embedder-Policy = "require-corp"
+    Cross-Origin-Opener-Policy = "same-origin"
+
+[[headers]]
+  for = "/managed/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

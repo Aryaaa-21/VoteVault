@@ -1,546 +1,170 @@
-# VoteVault 🛡️
-> **Vote Privately. Verify Publicly.**
-> An Enterprise-Grade, Zero-Knowledge Governance Platform Built on the Midnight Network.
-
----
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![React](https://img.shields.io/badge/React-18.3-blue.svg)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue.svg)](https://www.typescriptlang.org/)
-[![Midnight Network](https://img.shields.io/badge/Midnight-Compact_0.23-7B2CBF.svg)](https://midnight.network/)
-[![Vite](https://img.shields.io/badge/Vite-5.4-purple.svg)](https://vitejs.dev/)
-[![Vitest](https://img.shields.io/badge/Vitest-4.1-green.svg)](https://vitest.dev/)
-[![Playwright](https://img.shields.io/badge/Playwright-1.58-orange.svg)](https://playwright.dev/)
-[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-000000.svg?logo=vercel)](https://votevault-omega.vercel.app)
-[![Build Status](https://github.com/Aryaaa-21/VoteVault/actions/workflows/ci.yml/badge.svg)](https://github.com/Aryaaa-21/VoteVault/actions)
-[![Demo Video](https://img.shields.io/badge/Demo-Video_Walkthrough-red.svg?logo=youtube)](https://youtube.com)
-[![X Profile](https://img.shields.io/badge/Follow_on_X-@VoteVaultZK-black.svg?logo=x)](https://twitter.com/VoteVaultZK)
----
-
-## 📋 Table of Contents
-
-- [Project Overview](#-project-overview)
-- [Motivation & Problem Statement](#-motivation--problem-statement)
-- [Key Features](#-key-features)
-- [Why Midnight Network?](#-why-midnight-network)
-- [Privacy Model](#-privacy-model)
-- [Zero-Knowledge Architecture](#-zero-knowledge-architecture)
-- [Smart Contract Specification](#-smart-contract-specification)
-- [System Architecture](#-system-architecture)
-- [Folder Structure](#-folder-structure)
-- [Technology Stack](#-technology-stack)
-- [Wallet Integration](#-wallet-integration)
-- [Deployment Status](#-deployment-status)
-- [Installation & Setup](#-installation--setup)
-- [Configuration](#-configuration)
-- [Running Locally](#-running-locally)
-- [Build & CLI Commands](#-build--cli-commands)
-- [Testing Suite](#-testing-suite)
-- [CI/CD Pipeline](#-cicd-pipeline)
-- [Security & Threat Model](#-security--threat-model)
-- [Performance & Optimization](#-performance--optimization)
-- [Accessibility & UI Design](#-accessibility--ui-design)
-- [Screenshots & Visuals](#-screenshots--visuals)
-- [Live Demonstration](#-live-demonstration)
-- [Documentation Index](#-documentation-index)
-- [Roadmap](#-roadmap)
-- [Challenges & Lessons Learned](#-challenges--lessons-learned)
-- [Contribution Guide](#-contribution-guide)
-- [License](#-license)
-- [Acknowledgements & Contact](#-acknowledgements--contact)
-
----
-
-## 🌟 Project Overview
-
-### What is VoteVault?
-**VoteVault** is a privacy-preserving zero-knowledge governance platform designed for decentralized autonomous organizations (DAOs), municipal referendums, corporate boards, and digital communities. Built natively for the **Midnight Network**, VoteVault guarantees that every voter can cast an anonymous ballot without disclosing their identity, credential secret, or specific choice, while allowing any public node to independently verify election integrity and aggregate tallies on-chain.
-
-### Why Was VoteVault Created?
-On conventional public blockchains (e.g., Ethereum, Cardano), smart contract state is completely transparent. While transparency is valuable for tracking asset balances, public voting mechanisms expose voter addresses, time-stamped ballots, and wallet balances to public scrutiny. This transparency leads to:
-1. **Voter Coercion & Bribery**: Adversaries can inspect wallet addresses on-chain to verify whether bribed voters followed instructions.
-2. **Bandwagon Effects & Strategic Voting**: Real-time tally visibility influences late voters to abandon preferred minority options.
-3. **Targeted Harassment**: Whales and community members face public retaliation for voting against influential proposals.
-
-VoteVault solves these fundamental flaws by deploying **Compact zero-knowledge smart contracts** on Midnight. It guarantees **Private Voting with Public Verifiability**.
-
----
-
-## 🎯 Motivation & Problem Statement
-
-### Current Voting Systems Comparison
-
-| Voting System Type | Privacy | Public Verifiability | Sybil & Double-Voting Protection | Resistance to Coercion |
-| :--- | :--- | :--- | :--- | :--- |
-| **Traditional Paper Ballots** | Medium | Low (Manual Counting) | Low (Physical ID) | Medium |
-| **Centralized Web2 E-Voting** | Low (Server Logs) | None (Black Box) | High (Central Auth) | Low |
-| **Public Blockchain (Web3)** | **Zero (100% Public)** | **High (On-Chain)** | High (Token/Wallet Weight) | **Zero (Address Tracking)** |
-| **VoteVault on Midnight** | **100% Zero-Knowledge** | **High (On-Chain)** | **High (ZK Nullifier Map)** | **Maximum (Secret Witness)** |
-
----
-
-## 🚀 Key Features
-
-### 1. Private Voting Enclave
-- Computes ZK-SNARK witness proofs inside the local browser enclave via Midnight client extensions.
-- Voter credentials, private key salts, and option selections never leave the client's device in plaintext.
-
-### 2. Double-Voting Prevention via ZK Nullifiers
-- Every vote generates a deterministic, single-use cryptographic nullifier hash:
-  $$\mathcal{N} = \text{SHA-256}(\text{voter\_pubkey} \parallel \text{election\_id} \parallel \text{blinding\_secret})$$
-- The ledger tracks spent nullifiers to prevent double-voting without revealing identity.
-
-### 3. Public Tally Aggregation
-- Option tallies update publicly on the ledger upon receipt of a valid zero-knowledge proof.
-- Anyone can verify the proof against the public contract circuit.
-
-### 4. Comprehensive Admin Console
-- Referendum initialization, option enrollment, voting window activation, and terminal result publishing.
-
-### 5. Multi-Wallet Manager
-- Integrated provider manager supporting **1AM Wallet through Midnight's DApp Connector API**, injected browser extensions, and local devnet keypairs with persistent session handling.
-
-### 6. Dual Theme System & Fluid Responsive UI
-- Modern dark/light mode toggle with CSS variables and custom typography.
-- Fully responsive across 320px mobile viewports up to 3440px ultrawide displays with a mobile slide-over navigation drawer.
-
----
-
-## 🌙 Why Midnight Network?
-
-Midnight is a privacy-first layer-1 blockchain that utilizes **Compact smart contracts** and zero-knowledge cryptography.
-
-### Core Advantages of Midnight for Governance:
-1. **Dual State Architecture**: Explicitly separates public ledger state from private witness state.
-2. **Selective Disclosure**: Allows users to prove eligibility or property compliance without revealing underlying private keys or balances.
-3. **Compact Language Native Circuits**: Built-in support for ZK witness generation primitives (`export witness`).
-4. **Regulatory Compliance**: Offers auditability options without compromising individual privacy.
-
-```mermaid
-graph TD
-    A[Voter Private State] -->|Local ZK Prover| B(Witness Generation)
-    B -->|ZK Proof + Nullifier| C[Midnight Public Ledger]
-    C -->|On-Chain Verification| D[Public Vote Tally]
-    style A fill:#1E1E21,stroke:#7B2CBF,stroke-width:2px,color:#F5F5F5
-    style C fill:#0B0B0C,stroke:#6FCF97,stroke-width:2px,color:#F5F5F5
-```
-
----
-
-## 🔒 Privacy Model
-
-### Public Ledger vs. Private Witness Breakdown
-
-| Data Component | Storage Location | Visibility | Cryptographic Protection |
-| :--- | :--- | :--- | :--- |
-| **Admin Public Key** | Public Ledger | Public | Plaintext |
-| **Election ID & Metadata** | Public Ledger | Public | Plaintext |
-| **Candidate Option List** | Public Ledger | Public | Plaintext |
-| **Candidate Vote Tallies** | Public Ledger | Public | Plaintext (Aggregated) |
-| **Spent Nullifier Hashes** | Public Ledger | Public | One-Way SHA-256 Digest |
-| **Voter Secret Credential** | Private Witness | Private (Browser Enclave) | **Never Shared / Off-Chain** |
-| **Blinding Salt** | Private Witness | Private (Browser Enclave) | **Never Shared / Off-Chain** |
-| **Individual Vote Choice** | Private Witness | Private (Browser Enclave) | **Encrypted in ZK Proof** |
-
----
-
-## 🛠️ Zero-Knowledge Architecture
-
-### Proving & Verification Sequence
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Voter as Voter (Client Browser)
-    participant Prover as Local ZK Prover Enclave
-    participant Wallet as Wallet Provider (1AM)
-    participant Ledger as Midnight Blockchain Ledger
-
-    Voter->>Prover: Select Candidate Option Index (e.g. 0)
-    Prover->>Prover: Fetch Private Credential Secret & Blinding Salt
-    Prover->>Prover: Compute Cryptographic Nullifier N = SHA256(Secret || ElectionID || Salt)
-    Prover->>Prover: Construct ZK-SNARK Witness Proof
-    Prover->>Wallet: Request Transaction Signing (Circuit: cast_vote)
-    Wallet->>Voter: Prompt Transaction Approval
-    Voter->>Wallet: Approve Transaction
-    Wallet->>Ledger: Submit Tx [Nullifier N, ZK Proof, Option Index]
-    Ledger->>Ledger: Check nullifiers[N] == false
-    Ledger->>Ledger: Verify ZK-SNARK Proof against Circuit
-    Ledger->>Ledger: Set nullifiers[N] = true & Candidate Votes += 1
-    Ledger-->>Voter: Return Confirmed Receipt & Block Height
-```
-
----
-
-## 📜 Smart Contract Specification
-
-The smart contract is written in **Compact** (`contract/src/index.compact`).
-
-### Compact Contract Architecture
-
-```compact
-pragma language_version 0.23;
-
-// Private Witness Declarations (Client Enclave Only)
-export witness get_voter_credential_secret(): Bytes<32>;
-export witness get_nullifier_blinding_secret(): Bytes<32>;
-export witness get_private_vote_choice(): Uint<64>;
-export witness verify_membership_witness(voter_pubkey: Bytes<32>, election_id: Bytes<32>): Boolean;
-
-// Public Ledger State Declarations (On-Chain)
-export ledger admin_pubkey: Bytes<32>;
-export ledger election_id: Bytes<32>;
-export ledger election_title: Opaque<"string">;
-export ledger election_description: Opaque<"string">;
-export ledger election_active: Boolean;
-export ledger election_finalized: Boolean;
-export ledger election_deadline: Uint<64>;
-export ledger candidate_names: Map<Uint<64>, Opaque<"string">>;
-export ledger candidate_votes: Map<Uint<64>, Uint<64>>;
-export ledger total_votes: Uint<64>;
-export ledger nullifiers: Map<Bytes<32>, Boolean>;
-```
-
-### Circuit Reference Table
-
-| Circuit Name | Purpose | Required Inputs | State Mutated | Access Control |
-| :--- | :--- | :--- | :--- | :--- |
-| `initialize` | Set initial referendum parameters | `admin_pk`, `id`, `title`, `desc` | `admin_pubkey`, `election_id` | Admin Only |
-| `register_candidate` | Enroll candidate options | `sig`, `cand_idx`, `cand_name` | `candidate_names` | Admin Only |
-| `open_election` | Enable voting window | `admin_sig` | `election_active = true` | Admin Only |
-| `cast_vote` | Submit anonymous vote with ZK proof | `nullifier`, `candidate_idx` | `nullifiers`, `candidate_votes`, `total_votes` | Public (Valid Proof & Unspent Nullifier) |
-| `close_election` | Freeze voting window | `admin_sig` | `election_active = false` | Admin Only |
-| `finalize_election` | Seal terminal results | `admin_sig` | `election_finalized = true` | Admin Only |
-
----
-
-## 🏗️ System Architecture
-
-```mermaid
-graph LR
-    subgraph Client Application [React + Vite]
-        UI[User Interface]
-        WM[Wallet Manager]
-        CTX[VoteVault Context]
-    end
-
-    subgraph Midnight Layer [Client Enclave & Modular API]
-        ProofEngine[Proof Engine / Web Crypto]
-        TxLayer[Transaction Layer]
-        StateLayer[State Manager]
-    end
-
-    subgraph Midnight Network [Blockchain Node & Proof Server]
-        PS[Proof Server]
-        RPC[Midnight RPC Node]
-        Ledger[Compact Ledger State]
-    end
-
-    UI --> CTX
-    CTX --> WM
-    CTX --> TxLayer
-    TxLayer --> ProofEngine
-    TxLayer --> PS
-    TxLayer --> RPC
-    RPC --> Ledger
-```
-
----
-
-## 📂 Folder Structure
-
-```
-VoteVault-moon/
-├── contract/                       # Compact Smart Contract Workspace
-│   ├── src/
-│   │   └── index.compact           # Main VoteVault Compact Smart Contract Circuit
-│   ├── managed/                    # Generated Circuit Metadata & Typescript Artifacts
-│   │   ├── circuits.json
-│   │   ├── index.d.ts
-│   │   └── index.js
-│   ├── compile.js                  # Circuit Compilation Pipeline Script
-│   ├── deploy.js                   # Node & Enclave Deployment Pipeline Script
-│   └── deployed-address.json       # Deployment Record Metadata
-├── docs/                           # Documentation Center
-│   ├── architecture.md             # System Architecture & Layer Specifications
-│   ├── circuits.md                 # Detailed Compact Circuit Documentation
-│   ├── deployment.md               # Node & Proof Server Deployment Specs
-│   ├── file-documentation.md       # Comprehensive Repository File Map
-│   ├── final-review.md             # Codebase Review Summary
-│   ├── final-submission-audit.md   # Level 1-3 Compliance Audit Report
-│   ├── privacy-model.md            # ZK Cryptography & Privacy Specifications
-│   └── testing.md                  # Vitest & Playwright Testing Guide
-├── frontend/                       # React 18 + Vite Web Application
-│   ├── public/
-│   │   ├── votevault-logo.png      # Official Silver Metallic Brand Logo
-│   │   └── favicon.svg
-│   ├── src/
-│   │   ├── components/             # Reusable UI Components (Navbar, Footer, Modals, etc.)
-│   │   ├── context/                # Global State (VoteVaultContext, ThemeContext)
-│   │   ├── midnight/               # Modular Midnight SDK Integration Layer
-│   │   │   ├── ContractLayer.ts
-│   │   │   ├── NetworkLayer.ts
-│   │   │   ├── ProofLayer.ts
-│   │   │   ├── SimulationLayer.ts
-│   │   │   ├── StateLayer.ts
-│   │   │   ├── TransactionLayer.ts
-│   │   │   └── WalletLayer.ts
-│   │   ├── pages/                  # Application Routes (Dashboard, Admin, Results, Docs, etc.)
-│   │   ├── tests/                  # Vitest Unit Tests
-│   │   │   └── VoteVault.test.tsx
-│   │   ├── wallet/                 # Wallet Discovery & Session Manager
-│   │   ├── App.tsx                 # Main Application Router
-│   │   ├── index.css               # Design System & Responsive Utilities
-│   │   └── main.tsx
-│   ├── playwright.config.ts        # Playwright E2E Test Suite Config
-│   └── tests/
-│       └── e2e.spec.ts             # Playwright End-to-End Test Suite
-├── .vercelignore                   # Deployment Exclusions
-├── package.json                    # Monorepo Scripts
-├── README.md                       # Project Documentation
-└── vercel.json                     # Vercel SPA Routing Configuration
-```
-
----
-
-## 💻 Technology Stack
-
-| Domain | Technology | Version | Purpose |
-| :--- | :--- | :--- | :--- |
-| **Language** | Compact | `0.23` | Zero-Knowledge Smart Contract Circuits |
-| **Frontend Framework** | React | `18.3.1` | User Interface Architecture |
-| **Build Tool** | Vite | `5.4.1` | Development Server & Production Bundler |
-| **Type Safety** | TypeScript | `5.5.3` | End-to-End Type Safety |
-| **Styling System** | Tailwind CSS | `3.4.1` | Responsive Layouts & Design Tokens |
-| **Iconography** | Lucide React | `0.475` | UI Iconography |
-| **Animations** | Framer Motion | `12.4.7` | UI Micro-Animations & Slide Drawer |
-| **Unit Testing** | Vitest | `4.1.9` | Component & Context Unit Tests |
-| **E2E Testing** | Playwright | `1.58.0` | Multi-Browser End-to-End Testing |
-| **Deployment Platform** | Vercel | Production | SPA Web Client Hosting |
-
----
-
-## 👛 Wallet Integration
-
-VoteVault features a **Wallet Manager** (`frontend/src/wallet/WalletManager.ts`):
-
-- **1AM Wallet**: Enumerates the standard `window.midnight` DApp Connector entries, connects to the configured Midnight network, and reads the unshielded address from the connected API.
-- **MetaMask / EVM Injected**: Detection via `window.ethereum`.
-- **WalletConnect 2.0**: Mobile bridge protocol support.
-- **Developer Keypair & Enclave Simulator**: Local keypair for devnet circuit validation.
-
----
-
-## 🛰️ Deployment Status
-
-| Deployment Target | Status | Endpoint / Address | Environment |
-| :--- | :--- | :--- | :--- |
-| **Vercel Web Client** | **DEPLOYED & LIVE** | [https://votevault-omega.vercel.app](https://votevault-omega.vercel.app) | Production |
-| **Compact Contract** | **SIMULATED / DEVNET READY** | `0xsimulated_b0a42c997e95b7c6df4e1ab3d60901ccd46c50cb` | Preprod Testnet / Local Enclave |
-| **Proof Server** | Local / Configurable | `http://localhost:6300` | Configurable in Settings |
-| **Midnight RPC Node** | Local / Configurable | `http://localhost:9944` | Configurable in Settings |
-
----
-
-## ⚡ Installation & Setup
-
-### Prerequisites
-- **Node.js**: `v18.0.0` or higher
-- **npm**: `v9.0.0` or higher
-- **Git**: `v2.30.0` or higher
+# VoteVault
+
+> **A little proof. A lot left private.**
+
+VoteVault is a Midnight Network dApp for private allowlist access. An operator publishes a room rule and enrolls salted credential commitments. A visitor proves, with a Compact circuit, that a private score clears the rule and that their credential is in the operator-approved Merkle tree. The chain records the accepted result and a replay-resistant receipt without recording the score, secret, selected leaf, or Merkle path.
+
+**Project status:** local contract compilation, generated ZK artifacts, contract tests, frontend tests, production build, and CI configuration are included. A public deployment, screenshots, demo recording, product social profile, and commit history are intentionally left for the project owner to create and verify.
+
+## Product idea
+
+Private research rooms, member circles, beta releases, and small gatherings often need to answer one question: “is this visitor eligible?” They should not need to collect a wallet address, inspect a credential, or publish a guest list to answer it. VoteVault makes the eligibility decision verifiable while keeping the reason for eligibility inside a private proving witness. It is deliberately a narrow Level 3 **Private Allowlist Access** proposal rather than a general identity system.
+
+## What is included
+
+- `contracts/stillwater.compact` — Compact contract with public room state, private witnesses, `disclose()`, operator enrollment, Merkle membership, threshold checks, expiry, capacity, lifecycle controls, and one-time receipts.
+- `contracts/managed/stillwater` — generated contract bindings, circuits, prover keys, verifier keys, and ZKIR artifacts. Regenerate with `npm run compile`; do not hand edit this directory.
+- `frontend/` — React + Vite dApp with wallet selection, Preview/Preprod switching, private pass flow, public record, privacy notes, and browser-based operator Studio.
+- `docs/` — setup, usage, privacy, and submission evidence guidance.
+- `.github/workflows/` — CI on pushes and pull requests, plus a release build workflow.
+
+## Privacy model
+
+### Public by design
+
+The public ledger and transaction transcript can reveal:
+
+- room minimum score, salt, expiry, issuer commitment, capacity, and open/sealed state;
+- the operator commitment and the current authorized-credential Merkle root;
+- aggregate accepted-visitor count;
+- spent room-scoped receipt/nullifier values;
+- the contract and circuit called, transaction timing, and network metadata.
+
+### Private witness data
+
+The browser/wallet witness supplies:
+
+- the visitor score;
+- the visitor’s 32-byte secret;
+- the derived credential commitment preimage;
+- the selected credential leaf and Merkle authentication path;
+- the operator secret for operator-only circuits.
+
+Circuit arguments are public, so VoteVault does not pass the score or secret as circuit arguments. `disclose()` is used only where a value intentionally crosses into public ledger state. The Compact proof demonstrates that private inputs satisfied the checks; it does not make the existence, timing, circuit name, or public state transition invisible. Remote wallet/proving providers may observe operational metadata, and a very small room or outside timing information can weaken practical unlinkability.
+
+## Requirements
+
+- Node.js 22 and npm 10+
+- Compact manager/compiler 0.31.1
+- Docker Desktop for the optional local Midnight environment
+- Lace, 1AM, Nightly, or another compatible Midnight browser wallet for Preview/Preprod transactions
+- WSL Ubuntu on Windows when compiling locally on Windows (the Windows `compact.exe` utility is not the Compact compiler)
+
+Check the toolchain:
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/Aryaaa-21/VoteVault.git
-cd VoteVault
-
-# 2. Run Midnight Proof Server (Docker required)
-docker run -d -p 8080:8080 -p 5001:5001 --name midnight-proof-server midnightnetwork/proof-server:latest
-
-# 3. Install workspace dependencies
-npm install && npm --prefix frontend install && npm --prefix contract install
-
-# 4. Compile the smart contract
-npm --prefix contract run compile
+node --version
+npm --version
+compact --version
 ```
 
----
-
-## ⚙️ Configuration
-
-Create or update `.env` in `frontend/`:
-
-```env
-VITE_MIDNIGHT_NODE_URL=http://localhost:9944
-VITE_PROOF_SERVER_URL=http://localhost:6300
-VITE_SIMULATION_MODE=true
-```
-
----
-
-## 🏃 Running Locally
+## Local setup
 
 ```bash
-# Start Vite development server
-npm --prefix frontend run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
----
-
-## 🛠️ Build & CLI Commands
-
-```bash
-# Run Vitest unit tests
-npm --prefix frontend test
-
-# Run Playwright E2E tests
-npm --prefix frontend run test:e2e
-
-# Build production bundle
+npm install
+npm run compile
+npm test
+npm run typecheck
 npm run build
-
-# Preview production build locally
-npm --prefix frontend run preview
 ```
 
----
+`npm run compile` calls the Compact compiler with the pinned version, verifies the runtime/compiler versions, verifies every proving/verifying artifact, and copies generated assets into `frontend/src/managed` and `frontend/public/managed`.
 
-## 🧪 Testing Suite
-
-### Unit Testing (Vitest)
-Located in `frontend/src/tests/VoteVault.test.tsx`:
-- `1. Wallet Connection Flow`: Verifies connection, state updates, and session disconnect.
-- `2. Vote Casting Test`: Verifies ZK proof witness computation, nullifier storage, and option tally incrementing.
-- `3. Result Verification Test`: Verifies ledger audit logs and historical election outcomes.
-- `4. Election Creation Test`: Verifies referendum creation and candidate option enrollment.
-
-### End-to-End Testing (Playwright)
-Located in `frontend/tests/e2e.spec.ts`:
-- Validates real browser navigation, drawer toggle, vote casting, and results rendering.
+Start the frontend:
 
 ```bash
-npm --prefix frontend test       # 4/4 Passed
-npm --prefix frontend run test:e2e # 3/3 Passed
+npm run dev
 ```
 
----
+The app prints a local Vite URL. It can be explored without a wallet. A transaction requires a wallet connected to the selected network and a configured contract.
 
-## 🔄 CI/CD Pipeline
+Optional local services:
 
-The project uses GitHub Actions workflows for continuous integration:
-1. **Linting & Type-Checking**: Executes `tsc -b` and `oxlint`.
-2. **Unit Tests**: Runs Vitest test runner.
-3. **E2E Tests**: Runs Playwright headless Chromium tests.
-4. **Vercel Deployment**: Automatically builds and deploys updates to Vercel on push to `main`.
+```bash
+npm run env:up
+npm run compile
+npm run env:down
+```
 
----
+## Preview and Preprod configuration
 
-## 🔒 Security & Threat Model
+Copy `.env.preprod.example` to a private environment file when using Node-side tooling. Never commit seed phrases, mnemonics, operator secrets, or private pass backups.
 
-1. **Replay & Double-Voting Attack**: Prevented by enforcing single-use ZK nullifiers ($\mathcal{N}$).
-2. **Identity Leakage**: Private state keys are kept within the browser enclave and never transmitted in network requests.
-3. **Coercion Resistance**: The voter witness is computed locally; external observers cannot verify how an individual voted.
+Frontend configuration uses these Vite variables:
 
----
+```bash
+VITE_PREVIEW_CONTRACT_ADDRESS=
+VITE_PREPROD_CONTRACT_ADDRESS=
+VITE_PREVIEW_INDEXER_URL=https://indexer.preview.midnight.network/api/v4/graphql
+VITE_PREVIEW_INDEXER_WS=wss://indexer.preview.midnight.network/api/v4/graphql/ws
+VITE_PREPROD_INDEXER_URL=https://indexer.preprod.midnight.network/api/v4/graphql
+VITE_PREPROD_INDEXER_WS=wss://indexer.preprod.midnight.network/api/v4/graphql/ws
+```
 
-## ⚡ Performance & Optimization
+A freshly deployed address is scoped to the selected network and stored in browser storage by the Studio page. The app does not use an old generic address fallback.
 
-- **Fluid Typography**: Responsive font sizing using CSS `clamp()`.
-- **Bundle Optimization**: Vite code-splitting and asset minification.
-- **Micro-Animations**: GPU-accelerated Framer Motion transitions.
+## Browser deployment and first pass
 
----
+1. Open **Studio** and select Preview or Preprod.
+2. Connect the operator wallet on the same network.
+3. Keep the generated operator secret in memory, or explicitly import an acknowledged backup. Store a backup in a secure password manager if the operator must return later.
+4. Choose a minimum score, capacity, and future expiry, then deploy.
+5. Wait for indexed confirmation. A wallet acceptance or returned transaction id is not proof that a contract succeeded.
+6. Copy the address and open the network-aware explorer link.
+7. In **Your pass**, generate/import a 32-byte visitor secret and enter the private score.
+8. Copy the derived credential commitment and give it to the operator through a trusted channel.
+9. The operator enrolls that commitment in Studio. The visitor refreshes, connects a wallet, and submits the pass claim.
+10. Verify the public record shows only the room transition, aggregate counter, root, and receipt—not the score or secret.
 
-## ♿ Accessibility & UI Design
+The generated constructor order is:
 
-- **Semantic HTML5**: Full ARIA roles and structured headings (`<h1>`-`<h3>`).
-- **Keyboard Navigation**: Command search palette accessible via `Ctrl+K` / `Cmd+K`.
-- **High Contrast Ratios**: Dark mode theme meeting WCAG AA standards.
+```text
+(minimum: Uint<64>, salt: Bytes<32>, valid_until: Uint<64>, issuer: Bytes<32>, operator_hash: Bytes<32>, limit: Uint<32>)
+```
 
----
+## Verification commands
 
-## 📸 Screenshots & Visuals
+```bash
+npm run compile       # Compact + generated managed artifacts
+npm test              # 19 contract/runtime privacy tests
+npm run typecheck     # frontend TypeScript
+npm run build         # production frontend + root dist copy
+npm run check         # compile, typecheck, contract tests, build
+```
 
-> *Note: Replace these placeholders with actual screenshots for the final Level 4 submission.*
+Frontend logic tests can also be run directly:
 
-- **Compile Output**: `![Successful Compact Compile Output](./docs/assets/compile-success.png)`
-- **On-Chain Deployment**: `![Contract Deployed Address](./docs/assets/contract-deployment.png)`
-- **Landing Page**: `![Landing Page Banner](./docs/assets/landing-page.png)`
-- **Voter Dashboard**: `![Voter Dashboard](./docs/assets/voter-dashboard.png)`
-- **Admin Console**: `![Admin Console](./docs/assets/admin-console.png)`
+```bash
+npx vitest run --root frontend --config ../vitest.config.ts
+```
 
----
+## Level 1–4 readiness audit
 
-## 🔗 Live Demonstration
+| Level | Local implementation | Evidence still required from the owner |
+|---|---|---|
+| 1 — New Moon | Compact contract, generated `managed/`, 19 passing runtime tests, setup docs, public/private explanation, deployer UI | Preview/Preprod address, compile screenshot, deployment screenshot, public repository, five meaningful commits, initial idea submission |
+| 2 — Waxing Crescent | Wallet connect/disconnect, wallet selection, strict network matching, private Merkle claim flow, indexed confirmation states | Real Lace/1AM session, verifiable deployed address, live demo, wallet + proof video, eight meaningful commits |
+| 3 — First Quarter | Private Allowlist Access proposal, 19 contract tests, frontend tests, CI workflow, responsive polished dApp, truthful privacy documentation | Passing remote CI run/badge, three-test screenshot, live demo, one-minute demo, approval submission, ten meaningful commits |
+| 4 — Waxing Gibbous | Browser Studio deployment/admin page, technical/user docs, release workflow, day/night theme, public-record observatory, product-ready responsive UI | MVP deployed to Preprod, public product profile linked here, demo video, screenshots, passing CI badge, fifteen meaningful commits |
 
-Experience the live deployed application:
-👉 **[https://votevault-omega.vercel.app](https://votevault-omega.vercel.app)**
+Do not mark the external evidence as complete until it is genuinely produced. In particular, this repository does not claim a contract address, live URL, social profile, screenshots, demo video, or commit count.
 
----
+## Manual submission checklist
 
-## 📖 Usage Guide
+- [ ] Run `npm run compile`, save a screenshot with all five circuits and generated artifacts visible.
+- [ ] Deploy from Studio on Preview or Preprod and verify indexed success in the explorer.
+- [ ] Add the verified contract address to the network-specific environment/deployment configuration.
+- [ ] Capture the wallet connect → enrollment → private claim flow without exposing secrets in the recording.
+- [ ] Add a live demo, public product profile, screenshots, and demo video to this README after they exist.
+- [ ] Push to a public repository and create at least 15 meaningful commits across the build history.
+- [ ] Submit the Level 3 Private Allowlist Access proposal for approval.
 
-### 1. Connecting Your Wallet
-1. Install the **1AM Wallet** browser extension and switch to the **Midnight Preprod** network.
-2. Click **Connect Wallet** in the top right corner of the VoteVault application.
-3. Authorize the dApp connection when 1AM prompts you.
+## Design system
 
-### 2. Casting a Private Vote
-1. Navigate to the **Active Referendums** dashboard.
-2. Select an active election.
-3. Review the candidate options and use the slider to allocate your **Voice Credits** (Quadratic Voting).
-4. Click **Confirm & Sign**. The local enclave will derive your zero-knowledge witness and nullifier.
-5. Approve the transaction in 1AM. Wait for the transaction to be confirmed on the ledger.
+VoteVault uses an editorial field-notes direction: Playfair Display for considered hierarchy, DM Sans for interface copy, IBM Plex Mono for addresses and circuit metadata, warm mineral surfaces, deep forest night mode, copper focus/action accents, and locally served lake/forest imagery. The system is documented in `design-system/votevault/MASTER.md` and `design-system/votevault/IMPLEMENTATION.md`. Day/night preference is stored under `VOTEVAULT_THEME` and is fully semantic rather than a second page skin.
 
-### 3. Verifying the Audit Receipt
-1. After voting, navigate to the **Results** page.
-2. Under **Ledger Proof Verification**, paste your 64-character nullifier hash (found in your success modal).
-3. Click **Verify** to confirm your vote was aggregated on-chain without revealing your choice.
-4. Click **Export Audit JSON** to download your cryptographic receipt.
+Image/font provenance is documented in `frontend/public/images/ATTRIBUTION.md`. Decorative imagery is not chain evidence.
 
----
+## License
 
-## 🗺️ Roadmap
-
-- [x] **Phase 1: Preprod Deployment & Environment Setup** (Level 1 - New Moon)
-- [x] **Phase 2: Live 1AM Wallet DApp Connector Integration** (Level 2 - Waxing Crescent)
-- [x] **Phase 3: Merkle Allowlist & Quadratic Voting** (Level 3 - First Quarter)
-- [x] **Phase 4: Audit Receipts & Nullifier Verification** (Level 4 - Waxing Gibbous)
-- [x] **Phase 5: Product Launch, Video & Public Profile** (Level 4 - Waxing Gibbous)
-
----
-
-## 💡 Challenges & Lessons Learned
-
-- **ZK State Isolation**: Balancing public on-chain aggregations with private witness inputs in Compact required precise state separation.
-- **Responsive Layout Stability**: Standardizing spacing across screen sizes required fluid CSS utilities and custom Framer Motion drawers.
-
----
-
-## 🤝 Contribution Guide
-
-Contributions are welcome! Follow these steps:
-1. Fork the repository.
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`).
-4. Push to the branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
-
----
-
-## 📄 License
-
-Distributed under the **MIT License**. See [`LICENSE`](./package.json) for details.
-
----
-
-## 🙏 Acknowledgements & Contact
-
-- **Midnight Network Team**: For pioneering confidential smart contracts and the Compact programming language.
-- **Cardano Community & Open Source Contributors**: For UI iconography and tooling libraries.
-
-### Contact Information
-- **GitHub**: [https://github.com/Aryaaa-21/VoteVault](https://github.com/Aryaaa-21/VoteVault)
-- **Live Demo**: [https://votevault-omega.vercel.app](https://votevault-omega.vercel.app)
+MIT. See [`LICENSE`](LICENSE).
