@@ -1,0 +1,142 @@
+pragma language_version >=0.23.0;
+
+import CompactStandardLibrary;
+
+// VoteVault proves an operator-approved credential meets a public threshold.
+// Rules, enrollments and receipts are public; signal, secret and claim path are private.
+export ledger minimum_signal: Uint<64>;
+export ledger room_salt: Bytes<32>;
+export ledger expiry: Uint<64>;
+export ledger issuer_id: Bytes<32>;
+export ledger operator_commitment: Bytes<32>;
+export ledger room_live: Boolean;
+export ledger verified_visitors: Counter;
+export ledger visitor_limit: Uint<32>;
+export ledger spent_tokens: Set<Bytes<32>>;
+export ledger receipt_book: Map<Bytes<32>, Bytes<32>>;
+export sealed ledger release_tag: Bytes<32>;
+export ledger authorized_credentials: MerkleTree<10, Bytes<32>>;
+
+witness get_private_signal(): Uint<64>;
+witness get_room_secret(): Bytes<32>;
+witness operator_secret(): Bytes<32>;
+witness find_credential_path(commitment: Bytes<32>): MerkleTreePath<10, Bytes<32>>;
+
+constructor(
+    minimum: Uint<64>,
+    salt: Bytes<32>,
+    valid_until: Uint<64>,
+    issuer: Bytes<32>,
+    operator_hash: Bytes<32>,
+    limit: Uint<32>
+) {
+    validate_rules(minimum, salt, valid_until, issuer, limit);
+    assert(operator_hash != pad(32, ""), "Operator commitment must not be empty");
+    minimum_signal = disclose(minimum);
+    room_salt = disclose(salt);
+    expiry = disclose(valid_until);
+    issuer_id = disclose(issuer);
+    operator_commitment = disclose(operator_hash);
+    room_live = true;
+    visitor_limit = disclose(limit);
+    release_tag = pad(32, "stillwater:allowlist:v1");
+}
+
+// Enrollment publishes only the commitment. The operator must assess its provenance
+// off-chain: this circuit proves approval, not real-world truth of the hidden score.
+export circuit register_credential(commitment: Bytes<32>): [] {
+    authorize_operator();
+    assert(blockTimeLt(expiry), "This room has expired");
+    assert(commitment != pad(32, ""), "Credential commitment must not be empty");
+    assert(!authorized_credentials.isFull(), "Credential capacity reached");
+    authorized_credentials.insert(disclose(commitment));
+}
+
+export circuit claim_pass(): [] {
+    assert(room_live, "The room is sealed");
+    assert(blockTimeLt(expiry), "This room has expired");
+    assert(verified_visitors < visitor_limit, "Visitor capacity reached");
+
+    const signal = get_private_signal();
+    const secret = get_room_secret();
+    assert(secret != pad(32, ""), "Member secret must not be empty");
+    assert(signal >= minimum_signal, "Private signal does not clear the room rule");
+    const credential = credential_key(signal, secret, room_salt);
+    const path = find_credential_path(credential);
+    // Checking a root alone is insufficient: bind the witness leaf to these inputs.
+    assert(path.leaf == credential, "Credential path does not match private inputs");
+    assert(
+        authorized_credentials.checkRoot(disclose(merkleTreePathRoot<10, Bytes<32>>(path))),
+        "Credential is not authorized"
+    );
+
+    const token = make_receipt(secret, room_salt);
+    assert(!spent_tokens.member(disclose(token)), "This private token was already used");
+    spent_tokens.insert(disclose(token));
+    receipt_book.insert(disclose(token), room_salt);
+    verified_visitors.increment(1);
+}
+
+// Retuning keeps lifetime counts, receipts, nullifiers and the append-only tree.
+// Changing salt requires fresh enrollment; restoring an old salt cannot erase spends.
+// A room supports at most 1,024 enrollments across all rotations; deploy a new room
+// for a fresh tree. This deliberately is not a revocation or operator-key rotation API.
+export circuit retune_room(
+    next_minimum: Uint<64>,
+    next_salt: Bytes<32>,
+    next_expiry: Uint<64>,
+    next_issuer: Bytes<32>,
+    next_limit: Uint<32>
+): [] {
+    authorize_operator();
+    validate_rules(next_minimum, next_salt, next_expiry, next_issuer, next_limit);
+    assert(next_limit >= verified_visitors, "Capacity cannot be below existing claims");
+    minimum_signal = disclose(next_minimum);
+    room_salt = disclose(next_salt);
+    expiry = disclose(next_expiry);
+    issuer_id = disclose(next_issuer);
+    visitor_limit = disclose(next_limit);
+    room_live = true;
+}
+
+export circuit seal_room(): [] {
+    authorize_operator();
+    room_live = false;
+}
+
+export circuit unseal_room(): [] {
+    authorize_operator();
+    assert(blockTimeLt(expiry), "This room has expired");
+    room_live = true;
+}
+
+circuit authorize_operator(): [] {
+    const secret = operator_secret();
+    assert(operator_commitment == operator_key(secret), "Operator authorization failed");
+}
+
+circuit validate_rules(
+    minimum: Uint<64>, salt: Bytes<32>, valid_until: Uint<64>,
+    issuer: Bytes<32>, limit: Uint<32>
+): [] {
+    assert(minimum > 0, "Minimum signal must be positive");
+    assert(salt != pad(32, ""), "Room salt must not be empty");
+    assert(issuer != pad(32, ""), "Issuer identifier must not be empty");
+    assert(valid_until > 0, "Expiry must be positive");
+    assert(blockTimeLt(disclose(valid_until)), "Expiry must be in the future");
+    assert(limit > 0 && limit <= 1024, "Capacity must be between 1 and 1024");
+}
+
+export pure circuit operator_key(secret: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "stillwater:operator:v1"), secret]);
+}
+
+export pure circuit make_receipt(secret: Bytes<32>, salt: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<3, Bytes<32>>>([pad(32, "stillwater:receipt:v1"), secret, salt]);
+}
+
+export pure circuit credential_key(signal: Uint<64>, secret: Bytes<32>, salt: Bytes<32>): Bytes<32> {
+    return persistentHash<[Bytes<32>, Uint<64>, Bytes<32>, Bytes<32>]>(
+        [pad(32, "stillwater:credential:v1"), signal, secret, salt]
+    );
+}

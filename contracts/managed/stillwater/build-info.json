@@ -1,0 +1,14 @@
+{
+  "contract": "VoteVault",
+  "compilerVersion": "0.31.1",
+  "runtimeVersion": "0.16.0",
+  "source": "contracts/stillwater.compact",
+  "sourceSha256": "7f7668622dda411da9edd30a58d7d4c514ca4658e5231f0879d3391611c877b6",
+  "proofCircuits": [
+    "register_credential",
+    "claim_pass",
+    "retune_room",
+    "seal_room",
+    "unseal_room"
+  ]
+}
