@@ -1,56 +1,155 @@
 # VoteVault
 
-> **A little proof. A lot left private.**
+[![CI/CD Pipeline](https://github.com/Aryaaa-21/VoteVault/actions/workflows/ci.yaml/badge.svg)](https://github.com/Aryaaa-21/VoteVault/actions)
+[![Midnight Preview / Preprod Ready](https://img.shields.io/badge/Midnight-Preview%20%2F%20Preprod%20Ready-blueviolet)](https://midnight.network/)
+[![Contract Tests](https://img.shields.io/badge/Contract%20Tests-19%20passing-2ea44f)](https://github.com/Aryaaa-21/VoteVault/actions)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-VoteVault is a Midnight Network dApp for private allowlist access. An operator publishes a room rule and enrolls salted credential commitments. A visitor proves, with a Compact circuit, that a private score clears the rule and that their credential is in the operator-approved Merkle tree. The chain records the accepted result and a replay-resistant receipt without recording the score, secret, selected leaf, or Merkle path.
+### Private eligibility, visibly verified.
 
-**Project status:** local contract compilation, generated ZK artifacts, contract tests, frontend tests, production build, and CI configuration are included. A public deployment, screenshots, demo recording, product social profile, and commit history are intentionally left for the project owner to create and verify.
+VoteVault is a privacy-first allowlist gate for Midnight Network. An operator publishes a public room rule and enrolls salted credential commitments. A visitor proves that a private score clears the rule and that their credential belongs to the operator-approved Merkle tree, while the score, secret, selected leaf, and Merkle path remain inside the proving session.
+
+<p align="center">
+  <img src="frontend/public/images/votevault-lake.jpg" alt="VoteVault editorial lake interface atmosphere" width="100%" />
+</p>
+
+> **Project state:** The Compact contract, generated proving artifacts, deterministic tests, frontend, CI workflow, and release configuration are included. A Preprod contract address, public deployment, demo video, screenshots, and official social profile are intentionally not claimed until they are genuinely verified.
+
+---
+
+## 🚀 Local Demo & Deployment Status
+
+- 🌐 **Run the web application locally:** `npm run dev` → [http://localhost:5173](http://localhost:5173)
+- 📦 **Public repository:** [github.com/Aryaaa-21/VoteVault](https://github.com/Aryaaa-21/VoteVault)
+- 🧪 **CI/CD pipeline:** [View GitHub Actions](https://github.com/Aryaaa-21/VoteVault/actions)
+- 📜 **Contract address:** Not configured; deploy from **Studio** on Midnight Preview or Preprod first
+- 🧭 **Explorer:** The application creates a network-aware explorer link after a verified address is configured
+- 🛡️ **Deployment status:** Preview/Preprod ready; no external deployment is claimed by this repository
+
+The app is intentionally usable without a wallet for exploring the interface. Deployment and private claims require a compatible Midnight browser wallet, generated proving assets, an indexed contract, and the selected network configuration.
+
+---
+
+## 📸 Interface & Visual Evidence
+
+The repository currently contains atmospheric editorial imagery rather than fabricated product screenshots. These images are used by the frontend and are not chain evidence.
+
+### Screenshot-ready landing atmosphere
+
+The landing page uses a warm lake image to establish the quiet, editorial direction of VoteVault. Start the frontend locally to view the complete responsive interface.
+
+<p align="center">
+  <img src="frontend/public/images/votevault-lake.jpg" alt="VoteVault lake visual used by the landing page" width="88%" />
+</p>
+
+### Screenshot-ready privacy atmosphere
+
+The privacy and public-record pages use a forest image to separate the private witness story from the public ledger surface.
+
+<p align="center">
+  <img src="frontend/public/images/votevault-forest.jpg" alt="VoteVault forest visual used by the privacy pages" width="88%" />
+</p>
+
+### Evidence still required
+
+- [ ] Capture the landing page and responsive navigation.
+- [ ] Capture the **Your pass** private proving flow without exposing secrets.
+- [ ] Capture the **Public record** indexed ledger state.
+- [ ] Capture the **Studio** deployment and operator controls.
+- [ ] Capture the passing CI workflow after the repository checks complete remotely.
+
+---
+
+## 🎨 Brand Assets
+
+- **Application favicon:** [`frontend/public/favicon.svg`](frontend/public/favicon.svg)
+- **Lake atmosphere:** [`frontend/public/images/votevault-lake.jpg`](frontend/public/images/votevault-lake.jpg)
+- **Forest atmosphere:** [`frontend/public/images/votevault-forest.jpg`](frontend/public/images/votevault-forest.jpg)
+- **Image/font provenance:** [`frontend/public/images/ATTRIBUTION.md`](frontend/public/images/ATTRIBUTION.md)
+
+The imagery is decorative and locally served. It is not used as contract evidence, identity data, or proof material.
+
+---
 
 ## Product idea
 
-Private research rooms, member circles, beta releases, and small gatherings often need to answer one question: “is this visitor eligible?” They should not need to collect a wallet address, inspect a credential, or publish a guest list to answer it. VoteVault makes the eligibility decision verifiable while keeping the reason for eligibility inside a private proving witness. It is deliberately a narrow Level 3 **Private Allowlist Access** proposal rather than a general identity system.
+Private research rooms, member circles, beta releases, and small gatherings should be able to answer one question—“is this visitor eligible?”—without turning a guest list into a public identity map. VoteVault gives an operator a verifiable gate: publish the rule, enroll a commitment, let a visitor prove that their private signal meets the rule, and record only an anonymous one-time result.
 
-## What is included
+The pattern is deliberately narrow. It supports confidential credentials, private allowlists, invitation-only access, and small community rooms without requiring the operator to publish a visitor's score, secret, source credential, or Merkle path.
 
-- `contracts/stillwater.compact` — Compact contract with public room state, private witnesses, `disclose()`, operator enrollment, Merkle membership, threshold checks, expiry, capacity, lifecycle controls, and one-time receipts.
-- `contracts/managed/stillwater` — generated contract bindings, circuits, prover keys, verifier keys, and ZKIR artifacts. Regenerate with `npm run compile`; do not hand edit this directory.
-- `frontend/` — React + Vite dApp with wallet selection, Preview/Preprod switching, private pass flow, public record, privacy notes, and browser-based operator Studio.
-- `docs/` — setup, usage, privacy, and submission evidence guidance.
-- `.github/workflows/` — CI on pushes and pull requests, plus a release build workflow.
+## Why VoteVault is different
+
+- **Private allowlist access:** the selected product surface is eligibility, not a general identity system.
+- **A deliberate public surface:** minimum score, room salt, expiry, issuer commitment, capacity, status, aggregate count, and replay-resistant receipts only.
+- **A real Compact contract:** operator enrollment, Merkle membership, threshold checks, room lifecycle controls, and domain-separated receipts.
+- **A browser deployment portal:** connect a Midnight wallet, deploy compiled artifacts, configure a network-scoped address, and open the explorer.
+- **A calm public record:** inspect indexed public state without exposing private member data.
+- **Explicit wallet and transaction states:** connection, proving, submission, indexed confirmation, and failure are kept distinct.
+- **Day/night UI:** semantic tokens, visible focus states, reduced-motion-safe styling, and responsive layouts.
+
+## Architecture
+
+```text
+contracts/stillwater.compact
+        │ compact 0.31.1
+        ▼
+contracts/managed/stillwater/       generated bindings + zkir + prover/verifier keys
+        │ npm run copy:managed
+        ├── frontend/src/managed/contract/
+        └── frontend/public/managed/
+
+React + Vite
+  ├── Your pass       private score, secret, commitment and claim flow
+  ├── Public record   indexed public room state and receipts
+  ├── Studio          browser deployment, enrollment and lifecycle controls
+  └── Privacy notes   public/private boundary and disclosure model
+
+Midnight browser wallet
+  ├── DApp Connector API discovery
+  ├── Preview / Preprod network matching
+  ├── proving and transaction balancing
+  └── wallet approval + indexed confirmation
+```
+
+The generated artifact directory keeps the existing `stillwater` technical namespace and domain-separated tags as a compatibility boundary. The public product, package metadata, interface, and documentation are branded VoteVault; the internal namespace is not user-facing and is left stable to avoid changing contract behavior.
 
 ## Privacy model
 
-### Public by design
+### Public on-chain ledger
 
-The public ledger and transaction transcript can reveal:
+The following values are intentionally exported by `contracts/stillwater.compact`:
 
-- room minimum score, salt, expiry, issuer commitment, capacity, and open/sealed state;
-- the operator commitment and the current authorized-credential Merkle root;
-- aggregate accepted-visitor count;
-- spent room-scoped receipt/nullifier values;
-- the contract and circuit called, transaction timing, and network metadata.
+- `minimum_signal` — the public rule a private signal must clear;
+- `room_salt` and `issuer_id` — the active room domain and public issuer commitment;
+- `expiry`, `room_live`, and `visitor_limit` — lifecycle and capacity controls;
+- `operator_commitment` — the public commitment used to authorize operator circuits;
+- `verified_visitors` — the aggregate successful-claim count;
+- `spent_tokens` and `receipt_book` — replay protection and room-scoped public receipts;
+- the circuit called, transaction timing, network metadata, and indexed status.
 
-### Private witness data
+### Private client witness
 
-The browser/wallet witness supplies:
+The following values are supplied by browser witness callbacks and do not become circuit arguments:
 
-- the visitor score;
-- the visitor’s 32-byte secret;
-- the derived credential commitment preimage;
-- the selected credential leaf and Merkle authentication path;
-- the operator secret for operator-only circuits.
+- `get_private_signal()` — the private value compared with `minimum_signal`;
+- `get_room_secret()` — the member secret used to derive the credential and receipt;
+- `find_credential_path()` — the selected Merkle authentication path;
+- `operator_secret()` — the private secret used for operator authorization.
 
-Circuit arguments are public, so VoteVault does not pass the score or secret as circuit arguments. `disclose()` is used only where a value intentionally crosses into public ledger state. The Compact proof demonstrates that private inputs satisfied the checks; it does not make the existence, timing, circuit name, or public state transition invisible. Remote wallet/proving providers may observe operational metadata, and a very small room or outside timing information can weaken practical unlinkability.
+`disclose()` is used only when a value is intentionally moved into public ledger state. A proof demonstrates that the private signal met the rule and that the credential is in the authorized tree; it does not disclose the signal, secret, selected leaf, or path. Observers can see that `claim_pass` occurred, when it occurred, that the room accepted it, and the resulting public receipt. They cannot recover the private witness values from the proof.
 
-## Requirements
+## Getting started
 
-- Node.js 22 and npm 10+
-- Compact manager/compiler 0.31.1
-- Docker Desktop for the optional local Midnight environment
-- Lace, 1AM, Nightly, or another compatible Midnight browser wallet for Preview/Preprod transactions
-- WSL Ubuntu on Windows when compiling locally on Windows (the Windows `compact.exe` utility is not the Compact compiler)
+### Prerequisites
 
-Check the toolchain:
+- Node.js 22+
+- npm 10+
+- Docker Desktop for the optional local network
+- Compact compiler 0.31.1 (`compact`)
+- A Midnight-compatible browser wallet such as Lace, 1AM, or Nightly for Preview/Preprod transactions
+- WSL Ubuntu on Windows when compiling locally on Windows
+
+Verify the toolchain:
 
 ```bash
 node --version
@@ -58,39 +157,48 @@ npm --version
 compact --version
 ```
 
-## Local setup
+### Install and compile
 
 ```bash
 npm install
 npm run compile
-npm test
-npm run typecheck
-npm run build
 ```
 
-`npm run compile` calls the Compact compiler with the pinned version, verifies the runtime/compiler versions, verifies every proving/verifying artifact, and copies generated assets into `frontend/src/managed` and `frontend/public/managed`.
+`npm run compile` compiles the Compact source, verifies the compiler/runtime metadata, and synchronizes the generated bindings and proving assets into the frontend. Do not hand-edit `contracts/managed/stillwater`; regenerate it with the compile command.
 
-Start the frontend:
+### Run the contract test suite
 
 ```bash
-npm run dev
+npm test
 ```
 
-The app prints a local Vite URL. It can be explored without a wallet. A transaction requires a wallet connected to the selected network and a configured contract.
+The deterministic suite covers initial state, eligible and ineligible witnesses, operator authorization, one-time receipts, Merkle membership, capacity, expiry, room lifecycle, and domain separation.
 
-Optional local services:
+### Start the local network
 
 ```bash
 npm run env:up
 npm run compile
+npm run test:local
 npm run env:down
 ```
 
-## Preview and Preprod configuration
+For a full local transaction flow, wait for the indexer and DUST services to be ready before submitting transactions. DUST is Midnight's transaction resource; it is not a private member credential.
 
-Copy `.env.preprod.example` to a private environment file when using Node-side tooling. Never commit seed phrases, mnemonics, operator secrets, or private pass backups.
+### Run the frontend
 
-Frontend configuration uses these Vite variables:
+```bash
+npm run build
+npm run dev
+```
+
+Open the Vite URL shown in the terminal. The browser requests compiled proving assets from `/managed`.
+
+### Preview / Preprod environment
+
+Copy `.env.preprod.example` to a private `.env.preprod` when using Node-side tooling. Never commit wallet seeds, mnemonics, operator secrets, visitor secrets, or private backups.
+
+The frontend reads these network-specific variables:
 
 ```bash
 VITE_PREVIEW_CONTRACT_ADDRESS=
@@ -101,20 +209,21 @@ VITE_PREPROD_INDEXER_URL=https://indexer.preprod.midnight.network/api/v4/graphql
 VITE_PREPROD_INDEXER_WS=wss://indexer.preprod.midnight.network/api/v4/graphql/ws
 ```
 
-A freshly deployed address is scoped to the selected network and stored in browser storage by the Studio page. The app does not use an old generic address fallback.
+Contract addresses are intentionally empty by default. Studio stores a verified network-scoped address in browser storage after deployment is submitted; indexed confirmation must still be checked before sharing the address.
 
-## Browser deployment and first pass
+## Browser deployment flow
 
 1. Open **Studio** and select Preview or Preprod.
-2. Connect the operator wallet on the same network.
-3. Keep the generated operator secret in memory, or explicitly import an acknowledged backup. Store a backup in a secure password manager if the operator must return later.
-4. Choose a minimum score, capacity, and future expiry, then deploy.
-5. Wait for indexed confirmation. A wallet acceptance or returned transaction id is not proof that a contract succeeded.
-6. Copy the address and open the network-aware explorer link.
-7. In **Your pass**, generate/import a 32-byte visitor secret and enter the private score.
-8. Copy the derived credential commitment and give it to the operator through a trusted channel.
-9. The operator enrolls that commitment in Studio. The visitor refreshes, connects a wallet, and submits the pass claim.
-10. Verify the public record shows only the room transition, aggregate counter, root, and receipt—not the score or secret.
+2. Connect a compatible Midnight wallet on the selected network.
+3. Keep the generated 32-byte operator secret in memory, or import an acknowledged backup.
+4. Choose a minimum signal, visitor capacity, and future expiry.
+5. Run the deployment and approve the transaction in the wallet.
+6. Wait for indexed confirmation; wallet acceptance or a transaction id alone is not proof of success.
+7. Copy the network-aware contract address and open its explorer link.
+8. Enroll a visitor commitment in Studio through the operator circuit.
+9. Open **Your pass**, generate/import a visitor secret, and enter the private score.
+10. Share the derived commitment with the operator through a trusted channel, then submit the private claim after enrollment.
+11. Use **Public record** to verify the room transition and aggregate receipt without exposing the private witness.
 
 The generated constructor order is:
 
@@ -122,48 +231,42 @@ The generated constructor order is:
 (minimum: Uint<64>, salt: Bytes<32>, valid_until: Uint<64>, issuer: Bytes<32>, operator_hash: Bytes<32>, limit: Uint<32>)
 ```
 
-## Verification commands
+## Level 1–4 cross-check
 
-```bash
-npm run compile       # Compact + generated managed artifacts
-npm test              # 19 contract/runtime privacy tests
-npm run typecheck     # frontend TypeScript
-npm run build         # production frontend + root dist copy
-npm run check         # compile, typecheck, contract tests, build
-```
-
-Frontend logic tests can also be run directly:
-
-```bash
-npx vitest run --root frontend --config ../vitest.config.ts
-```
-
-## Level 1–4 readiness audit
-
-| Level | Local implementation | Evidence still required from the owner |
+| Level | Implementation in VoteVault | Status & evidence |
 |---|---|---|
-| 1 — New Moon | Compact contract, generated `managed/`, 19 passing runtime tests, setup docs, public/private explanation, deployer UI | Preview/Preprod address, compile screenshot, deployment screenshot, public repository, five meaningful commits, initial idea submission |
-| 2 — Waxing Crescent | Wallet connect/disconnect, wallet selection, strict network matching, private Merkle claim flow, indexed confirmation states | Real Lace/1AM session, verifiable deployed address, live demo, wallet + proof video, eight meaningful commits |
-| 3 — First Quarter | Private Allowlist Access proposal, 19 contract tests, frontend tests, CI workflow, responsive polished dApp, truthful privacy documentation | Passing remote CI run/badge, three-test screenshot, live demo, one-minute demo, approval submission, ten meaningful commits |
-| 4 — Waxing Gibbous | Browser Studio deployment/admin page, technical/user docs, release workflow, day/night theme, public-record observatory, product-ready responsive UI | MVP deployed to Preprod, public product profile linked here, demo video, screenshots, passing CI badge, fifteen meaningful commits |
+| 1 — New Moon | Compact source, generated managed artifacts, deterministic runtime tests, setup docs, public/private explanation, deployment UI | ✅ Local implementation complete; external deployment evidence still required |
+| 2 — Waxing Crescent | Wallet discovery, network matching, private Merkle claim flow, indexed confirmation states, public record | ✅ Implemented; real wallet session and deployed address still required |
+| 3 — First Quarter | Private Allowlist Access proposal, 19 contract tests, frontend tests, CI workflow, responsive UI, privacy documentation | ✅ Implemented; passing remote CI evidence and demo capture still required |
+| 4 — Waxing Gibbous | Browser Studio, technical/user docs, release workflow, day/night theme, public observatory surface | ✅ Product surface implemented; live deployment and public product profile still required |
 
-Do not mark the external evidence as complete until it is genuinely produced. In particular, this repository does not claim a contract address, live URL, social profile, screenshots, demo video, or commit count.
+## Evidence checklist
 
-## Manual submission checklist
-
-- [ ] Run `npm run compile`, save a screenshot with all five circuits and generated artifacts visible.
-- [ ] Deploy from Studio on Preview or Preprod and verify indexed success in the explorer.
-- [ ] Add the verified contract address to the network-specific environment/deployment configuration.
-- [ ] Capture the wallet connect → enrollment → private claim flow without exposing secrets in the recording.
-- [ ] Add a live demo, public product profile, screenshots, and demo video to this README after they exist.
-- [ ] Push to a public repository and create at least 15 meaningful commits across the build history.
-- [ ] Submit the Level 3 Private Allowlist Access proposal for approval.
+- [ ] Deploy the contract to Preview or Preprod and verify indexed success.
+- [ ] Add the verified network-specific contract address to the deployment configuration.
+- [ ] Capture the wallet connection → enrollment → private claim flow without exposing secrets.
+- [ ] Add interface screenshots to this README after they are genuinely captured.
+- [ ] Add a one-minute demo video and a public product profile after they exist.
+- [x] Include Compact source, generated proving/verifying artifacts, deterministic tests, frontend tests, CI, and production build configuration.
+- [x] Push the project to the public [VoteVault repository](https://github.com/Aryaaa-21/VoteVault).
 
 ## Design system
 
-VoteVault uses an editorial field-notes direction: Playfair Display for considered hierarchy, DM Sans for interface copy, IBM Plex Mono for addresses and circuit metadata, warm mineral surfaces, deep forest night mode, copper focus/action accents, and locally served lake/forest imagery. The system is documented in `design-system/votevault/MASTER.md` and `design-system/votevault/IMPLEMENTATION.md`. Day/night preference is stored under `VOTEVAULT_THEME` and is fully semantic rather than a second page skin.
+VoteVault uses an editorial field-notes direction rather than a generic crypto dashboard: Playfair Display for considered hierarchy, DM Sans for interface copy, IBM Plex Mono for cryptographic metadata, warm mineral surfaces, deep forest night mode, copper focus/action accents, and locally served lake/forest imagery. The day/night toggle uses `data-theme` semantic tokens and the `VOTEVAULT_THEME` preference key.
 
-Image/font provenance is documented in `frontend/public/images/ATTRIBUTION.md`. Decorative imagery is not chain evidence.
+The interface keeps wallet states explicit, keeps transaction-critical actions solid, avoids logging private witness values, and treats decorative imagery as atmosphere rather than evidence. Image and font provenance is documented in [`frontend/public/images/ATTRIBUTION.md`](frontend/public/images/ATTRIBUTION.md).
+
+## Useful commands
+
+```bash
+npm run compile       # compile + copy managed artifacts
+npm test              # deterministic contract/runtime tests
+npm run typecheck     # frontend TypeScript typecheck
+npm run build         # production frontend build + root dist copy
+npm run check         # compile, typecheck, tests, and build
+npm run env:up        # start optional local Midnight services
+npm run env:down      # stop optional local services
+```
 
 ## License
 
