@@ -1,7 +1,7 @@
 # VoteVault
 
 [![CI/CD Pipeline](https://github.com/Aryaaa-21/VoteVault/actions/workflows/ci.yaml/badge.svg)](https://github.com/Aryaaa-21/VoteVault/actions)
-[![Midnight Preview / Preprod Ready](https://img.shields.io/badge/Midnight-Preview%20%2F%20Preprod%20Ready-blueviolet)](https://midnight.network/)
+[![Midnight Preprod Deployment](https://img.shields.io/badge/Midnight-Preprod%20Deployment%20Linked-blueviolet)](https://explorer.1am.xyz/tx/b7ad778d33c67eb29c871e692ee6acece6350aac62f115c389304c22b3eab760?network=preprod)
 [![Contract Tests](https://img.shields.io/badge/Contract%20Tests-19%20passing-2ea44f)](https://github.com/Aryaaa-21/VoteVault/actions)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -13,7 +13,7 @@ VoteVault is a privacy-first allowlist gate for Midnight Network. An operator pu
   <img src="frontend/public/images/votevault-lake.jpg" alt="VoteVault editorial lake interface atmosphere" width="100%" />
 </p>
 
-> **Project state:** The Compact contract, generated proving artifacts, deterministic tests, frontend, CI workflow, and release configuration are included. A Preprod contract address, public deployment, demo video, screenshots, and official social profile are intentionally not claimed until they are genuinely verified.
+> **Project state:** The Compact contract, generated proving artifacts, deterministic tests, frontend, CI workflow, and release configuration are included. A Preprod contract address and deployment transaction are linked below. The live application, demo video, screenshots, and official social profile are not claimed until they are independently verified.
 
 ---
 
@@ -22,9 +22,11 @@ VoteVault is a privacy-first allowlist gate for Midnight Network. An operator pu
 - 🌐 **Run the web application locally:** `npm run dev` → [http://localhost:5173](http://localhost:5173)
 - 📦 **Public repository:** [github.com/Aryaaa-21/VoteVault](https://github.com/Aryaaa-21/VoteVault)
 - 🧪 **CI/CD pipeline:** [View GitHub Actions](https://github.com/Aryaaa-21/VoteVault/actions)
-- 📜 **Contract address:** Not configured; deploy from **Studio** on Midnight Preview or Preprod first
-- 🧭 **Explorer:** The application creates a network-aware explorer link after a verified address is configured
-- 🛡️ **Deployment status:** Preview/Preprod ready; no external deployment is claimed by this repository
+- 📜 **Preprod contract address:** [`618fb41030969d33902013c106185acd23690e2c5b7310411f1fd46ca38e54d8`](https://explorer.1am.xyz/contract/618fb41030969d33902013c106185acd23690e2c5b7310411f1fd46ca38e54d8?network=preprod)
+- 🔗 **Preprod deployment transaction:** [`b7ad778d33c67eb29c871e692ee6acece6350aac62f115c389304c22b3eab760`](https://explorer.1am.xyz/tx/b7ad778d33c67eb29c871e692ee6acece6350aac62f115c389304c22b3eab760?network=preprod)
+- 🧾 **Earlier deployment transaction:** [`6890e6acf337b62c7c1cc1680a348b6d09908969fbe096401b7d41d0f46ad377`](https://explorer.1am.xyz/tx/6890e6acf337b62c7c1cc1680a348b6d09908969fbe096401b7d41d0f46ad377?network=preprod)
+- 🧭 **Explorer:** [View the VoteVault contract on 1AM Explorer](https://explorer.1am.xyz/contract/618fb41030969d33902013c106185acd23690e2c5b7310411f1fd46ca38e54d8?network=preprod)
+- 🛡️ **Deployment status:** Preprod contract and deployment transaction supplied; live application evidence still requires verification
 
 The app is intentionally usable without a wallet for exploring the interface. Deployment and private claims require a compatible Midnight browser wallet, generated proving assets, an indexed contract, and the selected network configuration.
 
@@ -209,7 +211,7 @@ VITE_PREPROD_INDEXER_URL=https://indexer.preprod.midnight.network/api/v4/graphql
 VITE_PREPROD_INDEXER_WS=wss://indexer.preprod.midnight.network/api/v4/graphql/ws
 ```
 
-Contract addresses are intentionally empty by default. Studio stores a verified network-scoped address in browser storage after deployment is submitted; indexed confirmation must still be checked before sharing the address.
+Contract addresses are intentionally empty by default in a fresh checkout. Studio stores a verified network-scoped address in browser storage after deployment is submitted; indexed confirmation must still be checked before sharing the address. The supplied Preprod deployment is [`618fb41030969d33902013c106185acd23690e2c5b7310411f1fd46ca38e54d8`](https://explorer.1am.xyz/contract/618fb41030969d33902013c106185acd23690e2c5b7310411f1fd46ca38e54d8?network=preprod), with transaction [`b7ad778d33c67eb29c871e692ee6acece6350aac62f115c389304c22b3eab760`](https://explorer.1am.xyz/tx/b7ad778d33c67eb29c871e692ee6acece6350aac62f115c389304c22b3eab760?network=preprod).
 
 ## Browser deployment flow
 
@@ -242,7 +244,8 @@ The generated constructor order is:
 
 ## Evidence checklist
 
-- [ ] Deploy the contract to Preview or Preprod and verify indexed success.
+- [x] Add the supplied Preprod contract address and deployment transactions to the project documentation.
+- [ ] Verify indexed success from the explorer and confirm the address is configured in the deployed frontend.
 - [ ] Add the verified network-specific contract address to the deployment configuration.
 - [ ] Capture the wallet connection → enrollment → private claim flow without exposing secrets.
 - [ ] Add interface screenshots to this README after they are genuinely captured.
