@@ -98,7 +98,7 @@ VoteVault solves these fundamental flaws by deploying **Compact zero-knowledge s
 - Referendum initialization, option enrollment, voting window activation, and terminal result publishing.
 
 ### 5. Multi-Wallet Manager
-- Integrated provider manager supporting **Lace Wallet (Midnight Native)**, injected browser extensions, and local devnet keypairs with persistent session handling.
+- Integrated provider manager supporting **1AM Wallet through Midnight's DApp Connector API**, injected browser extensions, and local devnet keypairs with persistent session handling.
 
 ### 6. Dual Theme System & Fluid Responsive UI
 - Modern dark/light mode toggle with CSS variables and custom typography.
@@ -153,7 +153,7 @@ sequenceDiagram
     autonumber
     actor Voter as Voter (Client Browser)
     participant Prover as Local ZK Prover Enclave
-    participant Wallet as Wallet Provider (Lace)
+    participant Wallet as Wallet Provider (1AM)
     participant Ledger as Midnight Blockchain Ledger
 
     Voter->>Prover: Select Candidate Option Index (e.g. 0)
@@ -324,7 +324,7 @@ VoteVault-moon/
 
 VoteVault features a **Wallet Manager** (`frontend/src/wallet/WalletManager.ts`):
 
-- **Lace Wallet (Midnight Native)**: Native detection via `window.midnight.mnLace` or `window.cardano.lace`.
+- **1AM Wallet**: Enumerates the standard `window.midnight` DApp Connector entries, connects to the configured Midnight network, and reads the unshielded address from the connected API.
 - **MetaMask / EVM Injected**: Detection via `window.ethereum`.
 - **WalletConnect 2.0**: Mobile bridge protocol support.
 - **Developer Keypair & Enclave Simulator**: Local keypair for devnet circuit validation.
@@ -483,16 +483,16 @@ Experience the live deployed application:
 ## 📖 Usage Guide
 
 ### 1. Connecting Your Wallet
-1. Install the **Lace Wallet** browser extension and switch to the **Midnight Preprod** network.
+1. Install the **1AM Wallet** browser extension and switch to the **Midnight Preprod** network.
 2. Click **Connect Wallet** in the top right corner of the VoteVault application.
-3. Authorize the dApp connection when Lace prompts you.
+3. Authorize the dApp connection when 1AM prompts you.
 
 ### 2. Casting a Private Vote
 1. Navigate to the **Active Referendums** dashboard.
 2. Select an active election.
 3. Review the candidate options and use the slider to allocate your **Voice Credits** (Quadratic Voting).
 4. Click **Confirm & Sign**. The local enclave will derive your zero-knowledge witness and nullifier.
-5. Sign the transaction in Lace. Wait for the transaction to be confirmed on the ledger.
+5. Approve the transaction in 1AM. Wait for the transaction to be confirmed on the ledger.
 
 ### 3. Verifying the Audit Receipt
 1. After voting, navigate to the **Results** page.
@@ -505,7 +505,7 @@ Experience the live deployed application:
 ## 🗺️ Roadmap
 
 - [x] **Phase 1: Preprod Deployment & Environment Setup** (Level 1 - New Moon)
-- [x] **Phase 2: Live Lace Wallet DApp Integration** (Level 2 - Waxing Crescent)
+- [x] **Phase 2: Live 1AM Wallet DApp Connector Integration** (Level 2 - Waxing Crescent)
 - [x] **Phase 3: Merkle Allowlist & Quadratic Voting** (Level 3 - First Quarter)
 - [x] **Phase 4: Audit Receipts & Nullifier Verification** (Level 4 - Waxing Gibbous)
 - [x] **Phase 5: Product Launch, Video & Public Profile** (Level 4 - Waxing Gibbous)

@@ -9,18 +9,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@midnight-ntwrk/compact-js': path.resolve(__dirname, './src/shims/midnight.ts'),
+      '@midnight-ntwrk/compact-runtime': path.resolve(__dirname, './src/shims/midnight.ts'),
+      '@midnight-ntwrk/midnight-js-contracts': path.resolve(__dirname, './src/shims/midnight.ts'),
+      '@midnight-ntwrk/midnight-js-network-id': path.resolve(__dirname, './src/shims/midnight.ts'),
+      '@midnight-ntwrk/midnight-js-fetch-zk-config-provider': path.resolve(__dirname, './src/shims/midnight.ts'),
+      '@midnight-ntwrk/ledger-v8': path.resolve(__dirname, './src/shims/midnight.ts'),
     },
   },
-  build: {
-    rollupOptions: {
-      external: [
-        '@midnight-ntwrk/compact-js',
-        '@midnight-ntwrk/compact-runtime',
-        '@midnight-ntwrk/midnight-js-contracts',
-        '@midnight-ntwrk/midnight-js-network-id',
-        '@midnight-ntwrk/midnight-js-fetch-zk-config-provider',
-        '@midnight-ntwrk/ledger-v8'
-      ]
-    }
-  }
 })

@@ -40,7 +40,7 @@ pragma language_version 0.23;
 // PRIVATE WITNESS DECLARATIONS
 // ----------------------------------------------------------------------------
 // These witness declarations define private client-side functions executed within the voter's
-// isolated enclave (Lace Wallet / Midnight JS Private State Manager). They generate zero-knowledge
+// isolated enclave (1AM Wallet / Midnight JS Private State Manager). They generate zero-knowledge
 // witnesses without committing secret credentials or individual choices to the public blockchain ledger.
 
 export witness get_voter_credential_secret(): Bytes<32>;

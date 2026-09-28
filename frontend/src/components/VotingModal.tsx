@@ -28,7 +28,7 @@ export const VotingModal: React.FC<VotingModalProps> = ({ electionId, candidates
   const handleConfirmAndSign = async () => {
     if (selectedIndex === null) return;
     if (!walletConnected) {
-      await connectWallet('lace');
+      await connectWallet('1am');
     }
 
     setIsSubmitting(true);
@@ -174,7 +174,7 @@ export const VotingModal: React.FC<VotingModalProps> = ({ electionId, candidates
                 {[
                   { icon: '🔐', text: 'Deriving local witness secret & nullifier...' },
                   { icon: '⚡', text: 'Generating ZK-SNARK proof via Proof Server...' },
-                  { icon: '✍️', text: 'Awaiting Lace Wallet signature...' },
+                  { icon: '✍️', text: 'Awaiting 1AM Wallet approval...' },
                   { icon: '🌐', text: 'Broadcasting to Midnight Preprod consensus...' }
                 ].map((s, i) => (
                   <div key={i} className={`flex items-center space-x-3 text-xs transition-opacity duration-500 ${isSubmitting ? 'opacity-100' : 'opacity-30'}`} style={{ animationDelay: `${i * 0.8}s`, animationFillMode: 'both', animationName: 'fadeIn' }}>

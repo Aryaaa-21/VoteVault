@@ -1,10 +1,12 @@
-export type WalletType = 
-  | 'lace' 
-  | 'metamask' 
-  | 'walletconnect' 
-  | 'phantom' 
-  | 'developer' 
-  | 'demo' 
+export type WalletType =
+  | '1am'
+  /** @deprecated Use 1AM for Midnight wallet connections. */
+  | 'lace'
+  | 'metamask'
+  | 'walletconnect'
+  | 'phantom'
+  | 'developer'
+  | 'demo'
   | 'simulated';
 
 export interface WalletMetadata {

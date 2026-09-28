@@ -1,3 +1,4 @@
+import '@midnight-ntwrk/dapp-connector-api';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { VoteVaultProvider } from './context/VoteVaultContext';

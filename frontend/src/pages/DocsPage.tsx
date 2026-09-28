@@ -12,11 +12,11 @@ export const DocsPage: React.FC = () => {
       content: `VoteVault uses a monorepo architecture cleanly separating smart contract logic ('contract/') from frontend user interfaces ('frontend/').
 
 ### System Flow
-1. User connects Lace Wallet or injected browser provider.
+1. User connects 1AM Wallet through Midnight's DApp Connector API.
 2. Voter selects candidate option in frontend UI.
 3. Client enclave derives 32-byte spent nullifier hash N = SHA256(secret || electionId || salt).
 4. Witness prover generates ZK-SNARK proof.
-5. Transaction payload submitted to Midnight node.`
+5. The 1AM provider balances and submits the transaction to Midnight.`
     },
     privacy: {
       title: 'Privacy & Dual-State Specification',

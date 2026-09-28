@@ -15,10 +15,11 @@ function getCompiledContract() {
 }
 
 export function AdminPage() {
-  const { walletConnected, connectWallet } = useVoteVault();
+  const { walletConnected, walletApi, connectWallet } = useVoteVault();
   const [session, setSession] = useState<ConnectedSession | null>(null);
   const [status, setStatus] = useState<'idle' | 'deploying' | 'deployed' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [sessionError, setSessionError] = useState<string | null>(null);
   const [deployedAddress, setDeployedAddress] = useState<string | null>(
     localStorage.getItem('DEPLOYED_CONTRACT_ADDRESS')
   );
@@ -29,24 +30,36 @@ export function AdminPage() {
     async function initSession() {
       if (walletConnected) {
         try {
-          const injectedProvider = (window as any).midnight?.mnLace || (window as any).midnight?.['1am'];
-          if (injectedProvider) {
-            const api = await injectedProvider.enable();
-            const connectedSession = await createConnectedSession(api);
-            setSession(connectedSession);
+          if (!walletApi) {
+            throw new Error('The connected wallet did not provide a deployment API. Reconnect your 1AM wallet and try again.');
           }
-        } catch (e) {
+
+          const connectedSession = await createConnectedSession(walletApi);
+          setSession(connectedSession);
+          setSessionError(null);
+        } catch (e: any) {
           console.error("Failed to initialize session:", e);
+          setSession(null);
+          setSessionError(e?.message ?? String(e));
         }
       } else {
         setSession(null);
       }
     }
     initSession();
-  }, [walletConnected]);
+  }, [walletConnected, walletApi]);
 
   const handleDeploy = useCallback(async () => {
-    if (!session || !walletConnected) return;
+    if (!walletConnected) {
+      setStatus('error');
+      setErrorMsg('Connect your 1AM wallet before deploying.');
+      return;
+    }
+    if (!session) {
+      setStatus('error');
+      setErrorMsg(sessionError || 'Wallet session is still initializing. Please try again.');
+      return;
+    }
     setStatus('deploying');
     setErrorMsg(null);
 
@@ -86,7 +99,7 @@ export function AdminPage() {
       setStatus('error');
       setErrorMsg(e?.message ?? String(e));
     }
-  }, [session, walletConnected]);
+  }, [session, sessionError, walletConnected]);
 
   const copyAddress = () => {
     if (!deployedAddress) return;
@@ -100,9 +113,9 @@ export function AdminPage() {
       <div className="admin-container p-8 max-w-xl mx-auto text-center mt-20">
         <Settings size={48} className="mx-auto mb-4 text-gray-400" />
         <h2 className="text-2xl font-bold mb-2">Admin & Deployment Portal</h2>
-        <p className="text-gray-400 mb-6">Please connect your 1AM or Lace wallet on the Preview network to deploy.</p>
-        <button className="px-6 py-3 bg-blue-600 hover:bg-blue-500 font-semibold rounded-lg transition" onClick={() => connectWallet('lace')}>
-          Connect Wallet (Preview)
+        <p className="text-gray-400 mb-6">Please connect your 1AM wallet on the configured Midnight network to deploy.</p>
+        <button className="px-6 py-3 bg-blue-600 hover:bg-blue-500 font-semibold rounded-lg transition" onClick={() => connectWallet('1am')}>
+          Connect 1AM Wallet
         </button>
       </div>
     );
@@ -150,6 +163,12 @@ export function AdminPage() {
             >
               View on Midnight Explorer <ExternalLink size={14} />
             </a>
+          </div>
+        )}
+
+        {sessionError && status !== 'deploying' && (
+          <div className="mt-4 p-4 bg-yellow-900/30 border border-yellow-500 rounded-lg text-yellow-300">
+            <p className="text-xs break-words font-mono">Wallet session warning: {sessionError}</p>
           </div>
         )}
 

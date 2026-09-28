@@ -48,23 +48,22 @@ export const ConnectWalletPage: React.FC = () => {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto w-full">
-          {/* Lace Wallet Option (Primary for Midnight) */}
+          {/* 1AM Wallet Option (Primary for Midnight) */}
           <div className="p-5 rounded-2xl bg-[#1E1E21] border border-white/15 hover:border-white/30 transition-all space-y-4 flex flex-col justify-between group">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-heading font-bold text-base text-[#F5F5F5]">Lace Wallet</span>
+                <span className="font-heading font-bold text-base text-[#F5F5F5]">1AM Wallet</span>
                 <span className="px-2 py-0.5 rounded-full bg-[#6FCF97]/10 text-[#6FCF97] font-mono text-[10px]">
                   Official Midnight
                 </span>
               </div>
               <p className="text-xs text-[#8E8E93]">
-                Official Cardano & Midnight Network native wallet extension with integrated WASM zero-knowledge prover.
+                Connect through Midnight's DApp Connector API with wallet-side proving and dust-sponsored transactions.
               </p>
             </div>
 
-            {/* Playwright locator requirement: button:has-text("Connect Lace Wallet") */}
             <button
-              onClick={() => handleConnect('lace')}
+              onClick={() => handleConnect('1am')}
               disabled={isConnecting}
               className="w-full py-3 rounded-xl bg-[#F5F5F5] text-[#0B0B0C] font-bold text-xs hover:bg-[#C9C9C9] transition-all flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50"
             >
@@ -72,7 +71,7 @@ export const ConnectWalletPage: React.FC = () => {
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  <span>Connect Lace Wallet</span>
+                  <span>Connect 1AM Wallet</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </>
               )}

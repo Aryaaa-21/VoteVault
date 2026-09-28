@@ -2,7 +2,7 @@
  * Midnight Client Service for VoteVault
  * 
  * This module manages all direct integration points with the @midnight-network/midnight-js SDK,
- * the compiled Compact contract circuits, and the Lace Wallet injected provider.
+ * the compiled Compact contract circuits, and the 1AM DApp Connector provider.
  * 
  * ZERO-KNOWLEDGE PROOF EXECUTION ARCHITECTURE:
  * 1. Client Enclave: Computes secret nullifiers locally inside browser memory:
@@ -25,36 +25,49 @@ export class MidnightClient {
     }
 
     /**
-     * Integrates with the injected Lace Wallet extension provider
+     * Connect through the Midnight DApp Connector API.
+     * Wallet keys are extension-controlled, so enumerate window.midnight
+     * rather than depending on mnLace or a hardcoded 1AM key.
      */
-    async connectLaceWallet(): Promise<WalletConnectionState> {
-        console.log("[MidnightClient] Connecting to Lace Wallet...");
-        
-        // Check for injected Midnight provider (window.midnight.mnLace)
-        const injectedProvider = (window as any).midnight?.mnLace || (window as any).midnight?.['1am'];
-        if (!injectedProvider) {
-            throw new Error("1AM or Lace Wallet extension is not installed or enabled in this browser.");
+    async connect1AMWallet(network = import.meta.env.VITE_NETWORK_ID || 'preview'): Promise<WalletConnectionState> {
+        console.log("[MidnightClient] Connecting to 1AM Wallet...");
+
+        const wallets: any[] = Object.values((window as any).midnight ?? {}).filter(
+            (wallet: any) => wallet && typeof wallet.connect === 'function',
+        );
+        const wallet = wallets.find((candidate: any) =>
+            `${candidate.name ?? ''} ${candidate.rdns ?? ''}`.toLowerCase().includes('1am'),
+        ) ?? (wallets.length === 1 ? wallets[0] : null);
+
+        if (!wallet) {
+            throw new Error("1AM Wallet is not installed or enabled in this browser.");
         }
 
         try {
-            // Enable wallet access
-            const enabledApi = await injectedProvider.enable('preview');
-            const state = await enabledApi.state();
-            
-            if (!state.address) {
-                throw new Error("No address detected in connected Lace Wallet.");
-            }
+            const api = await wallet.connect(network);
+            const [addressResult, configuration] = await Promise.all([
+                api.getUnshieldedAddress(),
+                api.getConfiguration(),
+            ]);
+            const address = addressResult?.unshieldedAddress;
 
-            console.log(`[MidnightClient] Wallet connected: ${state.address} on ${state.network || 'devnet'}`);
+            if (!address) throw new Error("No unshielded address detected in 1AM Wallet.");
+
+            console.log(`[MidnightClient] Wallet connected: ${address} on ${configuration?.networkId || network}`);
             return {
-                address: state.address,
-                network: state.network || 'midnight-devnet',
-                api: enabledApi
+                address,
+                network: configuration?.networkId || network,
+                api,
             };
         } catch (err: any) {
-            console.error("[MidnightClient] Wallet connection failed:", err);
-            throw new Error(`Lace Wallet connection failed: ${err.message || err}`);
+            console.error("[MidnightClient] 1AM Wallet connection failed:", err);
+            throw new Error(`1AM Wallet connection failed: ${err.message || err}`);
         }
+    }
+
+    /** @deprecated Use connect1AMWallet(). */
+    async connectLaceWallet(): Promise<WalletConnectionState> {
+        return this.connect1AMWallet();
     }
 
     /**
@@ -63,7 +76,7 @@ export class MidnightClient {
      * @param electionId The 32-byte election identifier
      * @param candidateIndex The selected candidate option index
      * @param walletAddress Connected voter wallet address
-     * @param walletApi Connected Lace wallet API instance
+     * @param walletApi Connected 1AM wallet API instance
      */
     async castVoteOnChain(
         electionId: string, 
@@ -88,14 +101,14 @@ export class MidnightClient {
             
             const nullifier = `0x${nullifierHex}`;
 
-            // Check if executing via live Lace provider
+            // A full Midnight.js transaction uses the connected 1AM provider.
             if (walletApi && typeof walletApi.submitTx === 'function') {
-                console.log("[MidnightClient] Creating transaction on-chain via Lace Wallet API...");
+                console.log("[MidnightClient] Creating transaction on-chain via 1AM Wallet API...");
                 
                 // Live Midnight Network integration workflow:
                 // 1. Fetch contract instance from ledger/network registry
                 // 2. Build private witness inputs (get_voter_credential_secret, get_nullifier_blinding_secret)
-                // 3. Request Lace wallet to generate ZK-SNARK proof and sign transaction
+                // 3. Request 1AM to generate the ZK proof and submit the transaction
                 // 4. Submit transaction to Midnight node
                 
                 const txHash = await walletApi.submitTx({
@@ -139,7 +152,7 @@ export class MidnightClient {
 
         try {
             if (walletApi && typeof walletApi.deployContract === 'function') {
-                console.log("[MidnightClient] Deploying contract via Lace Wallet...");
+                console.log("[MidnightClient] Deploying contract via 1AM Wallet...");
                 
                 const contractInstance = new VoteVaultContract();
                 const encoder = new TextEncoder();

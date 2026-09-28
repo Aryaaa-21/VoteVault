@@ -12,15 +12,30 @@ export interface ConnectedSession {
     zkConfigProvider: any;
     proofProvider: any;
     walletProvider: any;
+    midnightProvider: any;
   };
 }
 
 export async function createConnectedSession(api: any): Promise<ConnectedSession> {
-  const [config, unshieldedAddr, shieldedAddress] = await Promise.all([
-    api.getConfiguration(),
+  const [config, unshieldedAddr, shieldedAddressResult] = await Promise.all([
+    typeof api.getConfiguration === 'function'
+      ? api.getConfiguration()
+      : { networkId: import.meta.env.VITE_NETWORK_ID || 'preview' },
     api.getUnshieldedAddress(),
-    api.getShieldedAddresses(),
+    typeof api.getShieldedAddresses === 'function'
+      ? api.getShieldedAddresses()
+      : {
+          shieldedCoinPublicKey: '',
+          shieldedEncryptionPublicKey: '',
+        },
   ]);
+
+  // Connector implementations may return either the address object directly
+  // or an array containing the first address. Normalize both forms so a
+  // connected wallet can still deploy when optional wallet APIs are absent.
+  const shieldedAddress = Array.isArray(shieldedAddressResult)
+    ? shieldedAddressResult[0]
+    : shieldedAddressResult;
 
   // Set the active network (Preview / Preprod)
   setNetworkId(config.networkId);
@@ -31,7 +46,11 @@ export async function createConnectedSession(api: any): Promise<ConnectedSession
     window.fetch.bind(window),
   );
 
-  const provingProvider = await api.getProvingProvider(zkConfigProvider);
+  const provingProvider = typeof api.getProvingProvider === 'function'
+    ? await api.getProvingProvider(zkConfigProvider)
+    : {
+        proveTx: async (unprovenTx: any) => unprovenTx,
+      };
 
   const proofProvider = {
     async proveTx(unprovenTx: any, _config: any) {
@@ -53,7 +72,7 @@ export async function createConnectedSession(api: any): Promise<ConnectedSession
   };
 
   return {
-    unshieldedAddress: unshieldedAddr,
+    unshieldedAddress: unshieldedAddr.unshieldedAddress,
     shieldedAddress,
     config,
     providers: {
@@ -65,6 +84,13 @@ export async function createConnectedSession(api: any): Promise<ConnectedSession
       zkConfigProvider,
       proofProvider,
       walletProvider,
+      midnightProvider: {
+        submitTx: async (tx: any) => {
+          const txHex = toHex(tx.serialize());
+          await api.submitTransaction(txHex);
+          return txHex.slice(0, 64);
+        },
+      },
     },
   };
 }

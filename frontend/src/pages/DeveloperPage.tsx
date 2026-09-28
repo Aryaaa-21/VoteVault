@@ -11,7 +11,7 @@ import { WalletLayer, ProofLayer, TransactionLayer } from '@votevault/midnight';
 
 // Initialize Midnight SDK layers
 const wallet = new WalletLayer();
-const session = await wallet.connect('lace');
+const session = await wallet.connect('1am');
 
 // Generate client witness proof locally
 const prover = new ProofLayer();

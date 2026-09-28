@@ -46,6 +46,8 @@ interface VoteVaultContextType {
   walletConnected: boolean;
   walletAddress: string | null;
   walletType: WalletType | null;
+  /** Connected 1AM DApp Connector API, when a live wallet session exists. */
+  walletApi: any | null;
   isConnecting: boolean;
   error: string | null;
   elections: Election[];
@@ -224,10 +226,18 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     // Auto-reconnect saved wallet session for human sessions
     const isAutomated = typeof window !== 'undefined' && Boolean(window.navigator?.webdriver);
     if (!isAutomated) {
-      const saved = WalletManager.getInstance().getStoredSession();
-      if (saved) {
+      const walletManager = WalletManager.getInstance();
+      const saved = walletManager.getStoredSession();
+      const activeApi = walletManager.getActiveApi();
+
+      // A persisted session does not persist the extension API object. Do not
+      // mark the wallet as connected unless the live API is still available;
+      // otherwise pages such as Admin would render as connected but could not
+      // initialize a deployment session. The user will see the reconnect CTA.
+      if (saved && activeApi) {
         setWalletAddress(saved.address);
         setWalletType(saved.walletType);
+        setWalletApi(activeApi);
         setWalletConnected(true);
       }
     }
@@ -460,6 +470,7 @@ export const VoteVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         walletConnected,
         walletAddress,
         walletType,
+        walletApi,
         isConnecting,
         error,
         elections,

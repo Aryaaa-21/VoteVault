@@ -36,13 +36,13 @@ export const LandingPage: React.FC = () => {
     {
       icon: Cpu,
       title: 'Local Client Enclave',
-      description: 'Private witness compilation and SNARK proofs execute locally inside browser memory using Lace Wallet.'
+      description: 'Private witness compilation and SNARK proofs are coordinated through the 1AM Wallet provider.'
     }
   ];
 
   const roadmap = [
     { phase: 'Phase 1 - Q3 2024', title: 'Compact Smart Contract Core', desc: 'Separate Public Ledger State from Private Witness Data with 6 ZK circuits.' },
-    { phase: 'Phase 2 - Q4 2024', title: 'Lace Wallet Integration', desc: 'Injected provider connector and local browser enclave witness prover.' },
+    { phase: 'Phase 2 - Q4 2024', title: '1AM Wallet Integration', desc: 'DApp Connector integration with wallet-side proving and dust-sponsored transactions.' },
     { phase: 'Phase 3 - Q1 2025', title: 'Multi-Chain DAO Governance', desc: 'Cross-chain Cardano staking voting rights mapping and quadratic voting.' },
     { phase: 'Phase 4 - Q2 2025', title: 'Institutional Enterprise Suite', desc: 'Multi-sig candidate approval and encrypted shareholder voting tools.' }
   ];
@@ -71,7 +71,7 @@ export const LandingPage: React.FC = () => {
     },
     {
       q: "Which wallets are supported?",
-      a: "VoteVault natively supports Lace Wallet (the official Midnight and Cardano wallet extension), injected EVM browser wallets, WalletConnect 2.0, and local developer enclave simulators."
+      a: "VoteVault connects to 1AM Wallet through Midnight's DApp Connector API, with injected EVM browser wallets, WalletConnect 2.0, and a local developer simulator available as fallbacks."
     }
   ];
 

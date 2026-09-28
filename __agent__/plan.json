@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "title": "Trace stale wallet session causing missing deployment API",
+      "status": "done"
+    },
+    {
+      "title": "Require a live wallet API before restoring connected state",
+      "status": "done"
+    },
+    {
+      "title": "Rebuild and rerun frontend tests",
+      "status": "done"
+    }
+  ],
+  "updated_at": "2026-09-28T16:15:03.893Z",
+  "session_id": "01a0e8b4-f5c6-72ad-b846-11359fe10af9"
+}
